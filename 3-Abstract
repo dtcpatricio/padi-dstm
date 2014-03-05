@@ -1,3 +1,0 @@
-Abstract
-
-The need for better transactional systems has been increasing in the last years, because locking-based systems are hard to program, debug and predict their behavior. However single machines have proven to be quite unreliable in having a service. The Internet has given great oportunities to distribute the computation over several servers. And so, distributing systems, and more importantly, Software Transactional Memory (STM) is of critical importance.
