@@ -1,0 +1,5 @@
+Introduction
+
+In this paper we purpose a solution for a Distributed Software Transactional Memory (DSTM) that is going to be called PADI-DSTM. We shall present the algorithms on which we will base our solution, the architecture of the library to be implemented by the servers and what work we will perform to solve this problem. The library will be written in .NET using Visual Studio Express.
+First, we will present the overall architecture, then how we are thinking on distributing the workload and finally the algorithms we intend to use.
+The main concerns we will have when developing this system is scalability and fault-tolerance.
