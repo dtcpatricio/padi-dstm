@@ -1,0 +1,5 @@
+Algorithm 1 – Slave Server selection for new object storage
+The client is able to create new PadInt objects through the createPadInt(int uid) method implemented in the PADI-DSTM library. This method sends to the master server of PADI-DSTM a request for the creation of a PadInt object with a unique identifier, uid, provided by the client. First, the master verifies if there is already an entry with uid. In this case, the master must return null to  the client. On the contrary, if there isn’t an entry for uid, the master selects a slave server based on a round-robin algorithm to where the object will be created. Second, the master adds the pair (uid, reference) to its hash table, where the reference is the selected slave’s reference, created through a hash function. This slave server then creates, locally, the PadInt object and sends to the client its reference.
+
+Cache mechanism
+To reduce the master’s overhead, it contains a cache where the references of objects are stored, transparently to the client, for future requests. The selection of which objects will be stored in the cache use a Least Recently Used algorithm (LRU).
