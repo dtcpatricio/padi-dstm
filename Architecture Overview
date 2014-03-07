@@ -1,0 +1,32 @@
+Figure 1 depicts the overall architecture of PADI-DSTM, which is comprised of components whose purpose is to offer a fault-tolerant decentralized solution for a distributed memory transaction problem, without jeopardizing too much performance. The Lib component is the main entry point of the system and mediates the interaction between the client and the PADI-DSTM. The centralised Master Server includes a cache-mechanism component and acts as a Load-Balancer. When creating PadInt objects, the latter, distributes the work load in a Round-Robin fashion among the available Slave Servers. In order to serve future requests faster, the cache mechanism acts according to the temporal locality principal. It stores the newly fetched object references from the slave servers. So, if the client wants to access a PadInt object, the Master first checks if the reference is stored in the local cache, in case of a cache miss, checks the hash table to find the slave that contains that object, and sends a message request to that server, that responds the object reference to the client and to the Master server, with a LRU policy. To achieve a fault-tolerant system we follow the passive replication approach, in which every slave has a dedicated replica server that is updated after the primary slave server processes a write request. The interchange order of message passing is illustrated with the following examples:
+
+
+
+CreatePadInt() :
+
+AcessPadInt():
+
+
+/******** Drafts **********/
+
+
+Each client has local access to the Lib Library,The client component accesses the system through the Lib API
+
+
+Algoritmo 1 – Round Robin
+O objetivo deste algoritmo é distribuir sequencialmente os objetos pelos servidores slave disponíveis, baseando-se no algoritmo de Round-Robin.  
+Quando o Master recebe uma transação, que cria objetos, insere este conjunto no mesmo servidor, com o intuito de aumentar o desempenho recorrendo ao princípio da localidade espacial . Caso nenhum servidor esteja disponível, a distribuição deste conjunto de objetos é espalhada pelos slave disponíveis.
+
+Algoritmo 2 – Cache
+O objectivo da cache é diminuir o Overhead no Master Server, contém um conjunto de referência de objectos remotos, que obtém recorrendo ao principio da localidade temporal. O objectos que são acedidos mais do que uma vez têm uma probabilidade maior de serem acedidos outra vez. Na ocorrência de um potencial candidato, a cache substitui este pelo último objecto acedido.
+
+Abort Recorvery - 
+
+Algoritmo 3 – Função de Disperção
+Algoritmo ? - Two
+3. Transações
+3.? TimeStamps
+3.? Deadlock Detection
+3.? Write Ahead Logging
+Desvantagens/Vantages
+•	O sistema vai ser composto por 2F + 1 Servers (Tolerância a 1 falta). O número de servidores será sempre 2N, em que N são os servidores slave.
