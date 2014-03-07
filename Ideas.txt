@@ -1,0 +1,59 @@
+Desvantagem: o utilizador é responsável pela atribuição de UID aos objetos
+
+Na instalação da biblioteca o master já é conhecido,
+assim como o master já conhece todos os slaves e vice-versa.
+
+O cliente ao fazer um write já teve que fazer um access ou create para ter 
+a referência do objeto.
+
+Cada servidor trata dos seus conflitos.
+
+Réplicas dos slaves:
+	- utilização de Réplica Passiva
+	- update da réplica sempre que ocorre uma escrita; 
+	- réplica envia "I'm alive" de x em x
+
+Assumimos que as operações de leitura são muito mais frequentes do que as restantes operações,
+portanto procuramos uma solução que...
+
+Não existe nenhuma solução ideal, existe um conjunto de soluções mais apropriada a uma situação,
+de acordo com diversos factores, como por exemplo:
+  - Sistema com muitos acessos?
+  - Sistema com grande quantidade de dados?
+  - Data sets com TBs de tamanho, mas payloads muito pequenos?
+  - ...
+
+Algoritmo – Seleção do servidor onde guardar o novo objeto criado
+Quando o cliente executa o método createPadInt(int uid), a partir da 
+biblioteca PADI-DSTM:
+	- o master verifica na sua hash table se já existe uma entrada 
+	  com esse UID:
+		- Se já existir, o servidor master devolve null ao cliente.
+		- Caso contrário:
+			- o master seleciona um servidor, com base num algoritmo
+			  de round-robin, onde criar o objecto;
+			- adiciona o par (uid, referência), em que o UID é o unique
+			  identifier do objecto e a referência é o servidor selecionado 
+			  criada a partir de uma função de dispersão, na hash table;
+			- o slave selecionado cria, localmente, o respetivo objeto padInt
+			  e responde ao cliente com a referência do objeto.
+
+
+Algoritmo 2 – Cache (não pôr algoritmo, por uma especificação da cache)
+O master contém uma cache na qual são guardadas, de forma transparente, as referências
+de objetos para pedidos futuros, com o objetivo de diminuir o overhead no master.
+A seleção das referências dos objetos a guardar na cache será baseada num algoritmo de 
+LRU (Least Recently Used).
+
+2PC:
+	- referir quais os papeis (coordenador e participante) de cada servidor
+	- um processo do slave que está a efectuar a transação envia as mensagens para os outros processos do mesmo server??
+	  (sim, porque pode haver a situação de um dos outros processos estar a efectuar uma mesma operação num dos objetos)
+	- quando se decide quem é o coordenador e os participantes, isto está sempre a alterar???
+
+Algoritmo 3 - Abort recovery
+De acordo com o 2PC, sempre que um dos participantes vota contra a confirmação de uma transação, 
+ou o temporizador expira (uma vez que tem de esperar pela confirmação, ou não, de todos os participantes,
+ou se considerar que a razão do timeout por parte de um dos participantes se deve a uma falta)
+o coordenador aborta a transação
+
