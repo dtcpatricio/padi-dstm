@@ -1,0 +1,315 @@
+
+%
+%  $Description: Author guidelines and sample document in LaTeX 2.09$ 
+%
+%  $Author: ienne $
+%  $Date: 1995/09/15 15:20:59 $
+%  $Revision: 1.4 $
+%
+
+\documentclass[times, 10pt,twocolumn]{article} 
+\usepackage{latex8}
+\usepackage{times}
+
+%\documentstyle[times,art10,twocolumn,latex8]{article}
+
+%------------------------------------------------------------------------- 
+% take the % away on next line to produce the final camera-ready version 
+\pagestyle{empty}
+
+%------------------------------------------------------------------------- 
+\begin{document}
+
+\title{\LaTeX\ Author Guidelines 
+       for {\boldmath $8.5 \times 11$-Inch} Proceedings Manuscripts}
+
+\author{Paolo Ienne\\
+Swiss Federal Institute of Technology\\ Microcomputing Laboratory \\ IN-F 
+Ecublens, 1015 Lausanne, Switzerland\\ Paolo.Ienne@di.epfl.ch\\
+% For a paper whose authors are all at the same institution, 
+% omit the following lines up until the closing ``}''.
+% Additional authors and addresses can be added with ``\and'', 
+% just like the second author.
+\and
+Second Author\\
+Institution2\\
+First line of institution2 address\\ Second line of institution2 address\\ 
+SecondAuthor@institution2.com\\
+}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+   The need for better transactional systems has been increasing in the last years, because locking-based systems are hard to program, debug and predict their behavior. However single machines have proven to be quite unreliable for network services, because it can crash and are a bottleneck. The Internet has given great oportunities to distribute the computation over several servers. And so, distributing systems, and more importantly, Software Transactional Memory (STM) is of critical importance.
+\end{abstract}
+
+
+
+%------------------------------------------------------------------------- 
+\Section{Introduction}
+
+Introduction
+
+In this paper we purpose a solution for a Distributed Software Transactional Memory (DSTM) that is going to be called PADI-DSTM. We shall present the algorithms on which we will base our solution, the architecture of the library to be implemented by the servers and what work we will perform to solve this problem. The library will be written in .NET using Visual Studio Express.
+First, we will present the overall architecture, then how we are thinking on distributing the workload and finally the algorithms we intend to use.
+The main concerns we will have when developing this system is scalability and fault-tolerance. 
+
+%------------------------------------------------------------------------- 
+\Section{Architecture}
+
+Figure 1 depicts the overall architecture of PADI-DSTM, which is comprised of components whose purpose is to offer a fault-tolerant decentralized solution for a distributed memory transaction problem, without jeopardizing too much performance. The Lib component is the main entry point of the system and mediates the interaction between the client and the PADI-DSTM. The centralised Master Server includes a cache-mechanism component and acts as a Load-Balancer. When creating PadInt objects, the latter, distributes the work load in a Round-Robin fashion among the available Slave Servers. In order to serve future requests faster, the cache mechanism acts according to the temporal locality principal. It stores the newly fetched object references from the slave servers. So, if the client wants to access a PadInt object, the Master first checks if the reference is stored in the local cache, in case of a cache miss, checks the hash table to find the slave that contains that object, and sends a message request to that server, that responds the object reference to the client and to the Master server, with a LRU policy. To achieve a fault-tolerant system we follow the passive replication approach, in which every slave has a dedicated replica server that is updated after the primary slave server processes a write request. The interchange order of message passing is illustrated with the following examples:
+
+
+
+CreatePadInt() :
+
+AcessPadInt():
+
+\SubSection{PadInt}
+Mesma Structure no cliente e no worker: (AFONSO???)
+ - uid
+ - value
+ - endereço do server
+ - endereço da réplica
+ 
+\SubSection{Library}
+
+\SubSection{Master Server}
+ - Master como cache/load-balancer...
+ - Data structures...
+ 
+\SubSection{Worker Servers}
+ - Slaves como coordenadores, participantes do 2PC...
+ - Data structures
+ 
+\SubSection{Replicas}
+
+
+
+
+
+
+
+
+/******** Drafts **********/
+
+
+Each client has local access to the Lib Library,The client component accesses the system through the Lib API
+
+
+Algoritmo 1 – Round Robin
+O objetivo deste algoritmo é distribuir sequencialmente os objetos pelos servidores slave disponíveis, baseando-se no algoritmo de Round-Robin.  
+Quando o Master recebe uma transação, que cria objetos, insere este conjunto no mesmo servidor, com o intuito de aumentar o desempenho recorrendo ao princípio da localidade espacial . Caso nenhum servidor esteja disponível, a distribuição deste conjunto de objetos é espalhada pelos slave disponíveis.
+
+Algoritmo 2 – Cache
+O objectivo da cache é diminuir o Overhead no Master Server, contém um conjunto de referência de objectos remotos, que obtém recorrendo ao principio da localidade temporal. O objectos que são acedidos mais do que uma vez têm uma probabilidade maior de serem acedidos outra vez. Na ocorrência de um potencial candidato, a cache substitui este pelo último objecto acedido.
+
+Abort Recorvery - 
+
+Algoritmo 3 – Função de Disperção
+Algoritmo ? - Two
+3. Transações
+3.? TimeStamps
+3.? Deadlock Detection
+3.? Write Ahead Logging
+Desvantagens/Vantages
+•	O sistema vai ser composto por 2F + 1 Servers (Tolerância a 1 falta). O número de servidores será sempre 2N, em que N são os servidores slave.
+
+FIGURE: 
+  - Exemplos da figura:
+    - Access
+    - Create
+
+%------------------------------------------------------------------------- 
+\Section{Algorithms}
+
+Algorithm 1 – Slave Server selection for new object storage
+The client is able to create new PadInt objects through the createPadInt(int uid) method implemented in the PADI-DSTM library. This method sends to the master server of PADI-DSTM a request for the creation of a PadInt object with a unique identifier, uid, provided by the client. First, the master verifies if there is already an entry with uid. In this case, the master must return null to  the client. On the contrary, if there isn’t an entry for uid, the master selects a slave server based on a round-robin algorithm to where the object will be created. Second, the master adds the pair (uid, reference) to its hash table, where the reference is the selected slave’s reference, created through a hash function. This slave server then creates, locally, the PadInt object and sends to the client its reference.
+
+Cache mechanism
+To reduce the master’s overhead, it contains a cache where the references of objects are stored, transparently to the client, for future requests. The selection of which objects will be stored in the cache use a Least Recently Used algorithm (LRU).
+
+
+%------------------------------------------------------------------------- 
+\Section{Transaction}
+Transactions
+
+Concurrency control:
+
+The library methods TxBegin(), TxCommit() and TxAbort() shall start a new transaction, commit a current transaction and abort the current transaction, respectively. Since the PADI-DSTM uses passive replication, with the data distributed among the workers, the transactions will use a timestamp-based concurrency control. This pessimist approach was chosen over lock-based to avoid deadlocks assuming the penalty of having more rejected write calls when conflics arise.
+Timestamps for the transactions will be assigned by order of arrival of the first operation over a certain object. Meaning that if a T1 and a T2 both perform read(A), then the first to arrive to the worker server will get the lowest timestamp. In simple timestamp ordering, a transaction (T2, for example) may have to wait to read, in the case that another transaction T1 < T2 (meaning with timestamp lower than), that has not yet committed, has a write timestamp WTS < T2. To reduce the amount of waiting transactions on read operations and rejected reads when they arrive too late, a multiversion timestamp ordering will be used.
+In figure xx there's an example of a distributed multiversion timestamp ordering. A transaction T1 reads an object A on server X and then writes to it. The server X now has a committed version of the object A. Next, a transaction T2 requests a read on object A on server X. T2 will read the A commited by T1, acquiring a read timestamp. Then tries to write to A which creates a tentative version of A. But, before T2 commits another transaction T3 tries to read A. Then T3 will read the tentative version of A written by T2 instead of waiting. After T2 commits the new committed WTS on object A is now T2. Since T3 has a tentative write on A, read from a value written by T2, it can commit, making so that the new WTS on object A is T3 from now on. On another side, a transaction T4 reads an object B on server Y, that was committed by another transaction sometime before - let's call it T0 -,  and a read timestamp for that object is added on the server Y. Then tries to read A and after that write to it. But, T2 had already acquired a WTS on A, and so the version of A that T4 read is invalid. It must abort.
+
+
+Commit protocol:
+
+The protocol used by the system to provide atomic commits shall be the two-phase commit protocol (2PC). In our implementation the coordinator will be Bone of the workers, being the one that holds the object first accessed by the current transaction. The participants of the commit phase are the remaining worker servers that hold the remaining objects used in the transaction. Since we're using timestamp ordering, the only reasons to abort a transaction will be due to a server crash. Hence, on the 2PC, if a server fails to respond to the prepare (canCommit?) message because it crashed, then the coordinator may abort the transaction.
+We can picture two scenarios concerning crashing on the 2PC.
+First scenario would be when a server crashes before receiving the prepare message, meaning that it would never write the modified values to the presistant storage. In this case, the server when it comes back up, it queries the coordinator for the status of the transaction. If there was no timeout, the coordinator sends another prepare to the nodes that did not reply. If the was a timeout, then the coordinator informs the node to discard any changes it made.
+The second scenario would happen when a server crashes right after it writes the new values to the presistant storage. Now, when the server comes back up it again queries the coordinator for the status. If there was a timeout, the coordinator informs the node that it must discard the changes made. The difference between these two scenarios is that this time the server must rollback the changes made to the persistant storage. Hence, there needs to be a log in disk that has a history of recent operations.
+
+%------------------------------------------------------------------------- 
+\SubSection{Language}
+
+All manuscripts must be in English.
+
+%------------------------------------------------------------------------- 
+\SubSection{Printing your paper}
+
+Print your properly formatted text on high-quality, $8.5 \times 11$-inch 
+white printer paper. A4 paper is also acceptable, but please leave the 
+extra 0.5 inch (1.27 cm) at the BOTTOM of the page.
+
+%------------------------------------------------------------------------- 
+\SubSection{Margins and page numbering}
+
+All printed material, including text, illustrations, and charts, must be 
+kept within a print area 6-7/8 inches (17.5 cm) wide by 8-7/8 inches 
+(22.54 cm) high. Do not write or print anything outside the print area. 
+Number your pages lightly, in pencil, on the upper right-hand corners of 
+the BACKS of the pages (for example, 1/10, 2/10, or 1 of 10, 2 of 10, and 
+so forth). Please do not write on the fronts of the pages, nor on the 
+lower halves of the backs of the pages.
+
+
+%------------------------------------------------------------------------ 
+\SubSection{Formatting your paper}
+
+All text must be in a two-column format. The total allowable width of 
+the text area is 6-7/8 inches (17.5 cm) wide by 8-7/8 inches (22.54 cm) 
+high. Columns are to be 3-1/4 inches (8.25 cm) wide, with a 5/16 inch 
+(0.8 cm) space between them. The main title (on the first page) should 
+begin 1.0 inch (2.54 cm) from the top edge of the page. The second and 
+following pages should begin 1.0 inch (2.54 cm) from the top edge. On 
+all pages, the bottom margin should be 1-1/8 inches (2.86 cm) from the 
+bottom edge of the page for $8.5 \times 11$-inch paper; for A4 paper, 
+approximately 1-5/8 inches (4.13 cm) from the bottom edge of the page.
+
+%------------------------------------------------------------------------- 
+\SubSection{Type-style and fonts}
+
+Wherever Times is specified, Times Roman may also be used. If neither is 
+available on your word processor, please use the font closest in 
+appearance to Times that you have access to.
+
+MAIN TITLE. Center the title 1-3/8 inches (3.49 cm) from the top edge of 
+the first page. The title should be in Times 14-point, boldface type. 
+Capitalize the first letter of nouns, pronouns, verbs, adjectives, and 
+adverbs; do not capitalize articles, coordinate conjunctions, or 
+prepositions (unless the title begins with such a word). Leave two blank 
+lines after the title.
+
+AUTHOR NAME(s) and AFFILIATION(s) are to be centered beneath the title 
+and printed in Times 12-point, non-boldface type. This information is to 
+be followed by two blank lines.
+
+The ABSTRACT and MAIN TEXT are to be in a two-column format. 
+
+MAIN TEXT. Type main text in 10-point Times, single-spaced. Do NOT use 
+double-spacing. All paragraphs should be indented 1 pica (approx. 1/6 
+inch or 0.422 cm). Make sure your text is fully justified---that is, 
+flush left and flush right. Please do not place any additional blank 
+lines between paragraphs. Figure and table captions should be 10-point 
+Helvetica boldface type as in
+\begin{figure}[h]
+   \caption{Example of caption.}
+\end{figure}
+
+\noindent Long captions should be set as in 
+\begin{figure}[h] 
+   \caption{Example of long caption requiring more than one line. It is 
+     not typed centered but aligned on both sides and indented with an 
+     additional margin on both sides of 1~pica.}
+\end{figure}
+
+\noindent Callouts should be 9-point Helvetica, non-boldface type. 
+Initially capitalize only the first word of section titles and first-, 
+second-, and third-order headings.
+
+FIRST-ORDER HEADINGS. (For example, {\large \bf 1. Introduction}) 
+should be Times 12-point boldface, initially capitalized, flush left, 
+with one blank line before, and one blank line after.
+
+SECOND-ORDER HEADINGS. (For example, {\elvbf 1.1. Database elements}) 
+should be Times 11-point boldface, initially capitalized, flush left, 
+with one blank line before, and one after. If you require a third-order 
+heading (we discourage it), use 10-point Times, boldface, initially 
+capitalized, flush left, preceded by one blank line, followed by a period 
+and your text on the same line.
+
+%------------------------------------------------------------------------- 
+\SubSection{Footnotes}
+
+Please use footnotes sparingly%
+\footnote
+   {%
+     Or, better still, try to avoid footnotes altogether.  To help your 
+     readers, avoid using footnotes altogether and include necessary 
+     peripheral observations in the text (within parentheses, if you 
+     prefer, as in this sentence).
+   }
+and place them at the bottom of the column on the page on which they are 
+referenced. Use Times 8-point type, single-spaced.
+
+
+%------------------------------------------------------------------------- 
+\SubSection{References}
+
+List and number all bibliographical references in 9-point Times, 
+single-spaced, at the end of your paper. When referenced in the text, 
+enclose the citation number in square brackets, for example~\cite{ex1}. 
+Where appropriate, include the name(s) of editors of referenced books.
+
+%------------------------------------------------------------------------- 
+\SubSection{Illustrations, graphs, and photographs}
+
+All graphics should be centered. Your artwork must be in place in the 
+article (preferably printed as part of the text rather than pasted up). 
+If you are using photographs and are able to have halftones made at a 
+print shop, use a 100- or 110-line screen. If you must use plain photos, 
+they must be pasted onto your manuscript. Use rubber cement to affix the 
+images in place. Black and white, clear, glossy-finish photos are 
+preferable to color. Supply the best quality photographs and 
+illustrations possible. Penciled lines and very fine lines do not 
+reproduce well. Remember, the quality of the book cannot be better than 
+the originals provided. Do NOT use tape on your pages!
+
+%------------------------------------------------------------------------- 
+\SubSection{Color}
+
+The use of color on interior pages (that is, pages other
+than the cover) is prohibitively expensive. We publish interior pages in 
+color only when it is specifically requested and budgeted for by the 
+conference organizers. DO NOT SUBMIT COLOR IMAGES IN YOUR 
+PAPERS UNLESS SPECIFICALLY INSTRUCTED TO DO SO.
+
+%------------------------------------------------------------------------- 
+\SubSection{Symbols}
+
+If your word processor or typewriter cannot produce Greek letters, 
+mathematical symbols, or other graphical elements, please use 
+pressure-sensitive (self-adhesive) rub-on symbols or letters (available 
+in most stationery stores, art stores, or graphics shops).
+
+%------------------------------------------------------------------------ 
+\SubSection{Copyright forms}
+
+You must include your signed IEEE copyright release form when you submit 
+your finished paper. We MUST have this form before your paper can be 
+published in the proceedings.
+
+%------------------------------------------------------------------------- 
+\SubSection{Conclusions}
+
+Please direct any questions to the production editor in charge of these 
+proceedings at the IEEE Computer Society Press: Phone (714) 821-8380, or 
+Fax (714) 761-1784.
+
+%------------------------------------------------------------------------- 
+\nocite{ex1,ex2}
+\bibliographystyle{latex8}
+\bibliography{latex8}
+
+\end{document}
+
