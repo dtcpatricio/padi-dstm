@@ -1,0 +1,35 @@
+Desvantagem: o utilizador é responsável pela atribuição de UID aos objetos
+
+Na instalação da biblioteca o master já é conhecido,
+assim como o master já conhece todos os slaves e vice-versa.
+
+O cliente ao fazer um write já teve que fazer um access ou create para ter 
+a referência do objeto.
+
+
+
+Algoritmo 1 – Seleção do servidor onde guardar o novo objeto criado
+Quando o cliente executa o método createPadInt(int uid), a partir da 
+biblioteca PADI-DSTM, onde:
+	- o master verifica na sua hash table se já existe uma entrada 
+	  com esse UID:
+		- Se já existir, o servidor master devolve null ao cliente.
+		- Caso contrário:
+			- o master seleciona um servidor, com base num algoritmo
+			  de round-robin, onde criar o objecto;
+			- adiciona o par (uid, referência), em que a referência é o
+			  servidor selecionado criada a partir de uma função de 
+			  dispersão, na hash table;
+			- o slave selecionado cria, localmente, o respetivo objeto padInt
+			  e responde ao cliente com a referência do objeto.
+			  (NOTA: update da réplica sempre que ocorre uma escrita; réplica envia "I'm alive" de x em x)
+
+
+Algoritmo 2 – Cache
+O objectivo da cache é diminuir o Overhead no Master Server, contém um 
+conjunto de referência de objectos remotos, que obtém recorrendo ao 
+principio da localidade temporal. O objectos que são acedidos mais do 
+que uma vez têm uma probabilidade maior de serem acedidos outra vez. 
+Na ocorrência de um potencial candidato, a cache substitui este pelo 
+último objecto acedido.
+
