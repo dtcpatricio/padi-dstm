@@ -26,8 +26,23 @@ namespace Event
 
     class Slider
     {
-        public event MoveEventHandler moveEvent;
+        private event MoveEventHandler moveEvent;
         private int position = 0;
+
+        public event MoveEventHandler Event
+        {
+            add
+            {
+                moveEvent += value;
+            }
+            remove
+            {
+                if (moveEvent != null)
+                {
+                    moveEvent -= value;
+                }
+            }
+        }
 
         public int Position
         {
@@ -64,8 +79,8 @@ namespace Event
             Slider slider = new Slider();
 
             // slider subscribes event, when event is triggered method slider_Move + currentPosition are executed
-            slider.moveEvent += slider_Move;
-            slider.moveEvent += slider.currentPosition;
+            slider.Event += slider_Move;
+            slider.Event += slider.currentPosition;
 
             while (true)
             {
