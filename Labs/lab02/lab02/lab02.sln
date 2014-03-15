@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Delegates", "lab02\Delegates.csproj", "{AC0781C7-BAAD-4F96-9E5E-3E59B05258C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Events", "Events\Events.csproj", "{99FB019A-189E-4343-9B9D-D3FA1F656929}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Events", "Events\Events.csproj", "{6DEEA0D0-2AE0-45AF-82F7-15E2D1F86B5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,10 @@ Global
 		{AC0781C7-BAAD-4F96-9E5E-3E59B05258C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC0781C7-BAAD-4F96-9E5E-3E59B05258C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC0781C7-BAAD-4F96-9E5E-3E59B05258C5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{99FB019A-189E-4343-9B9D-D3FA1F656929}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99FB019A-189E-4343-9B9D-D3FA1F656929}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99FB019A-189E-4343-9B9D-D3FA1F656929}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99FB019A-189E-4343-9B9D-D3FA1F656929}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DEEA0D0-2AE0-45AF-82F7-15E2D1F86B5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DEEA0D0-2AE0-45AF-82F7-15E2D1F86B5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DEEA0D0-2AE0-45AF-82F7-15E2D1F86B5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DEEA0D0-2AE0-45AF-82F7-15E2D1F86B5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
