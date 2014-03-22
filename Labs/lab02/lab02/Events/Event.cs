@@ -53,15 +53,16 @@ namespace Event
             //this is what is run when we change the position
             set
             {
+                if (moveEvent != null)
+                {
+                    moveEvent(this, new MoveEventArgs(value));
+                }
+
                 if (value <= 50 && value >= 0)
                 {
                     position = value;               
                 }
 
-                if (moveEvent != null)
-                {
-                    moveEvent(this, new MoveEventArgs(value));
-                }
             }
         }
 
