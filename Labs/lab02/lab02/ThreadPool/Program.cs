@@ -8,6 +8,7 @@ class ThrPool
     ThrWork[] buffer;   // The circular buffer
     Thread[] pool;  // The thread pool
     int bufIndex = 0;   // last available index of circular buffer
+    int thrIndex = 0;
     Boolean end = false;
 
     public ThrPool(int thrNum, int bufSize)
@@ -18,10 +19,11 @@ class ThrPool
 
     public void InitializePool(int thrNum)
     {
-        ThreadStart ts = new ThreadStart(Execute);
+        ThreadStart ts;
         pool = new Thread[thrNum];
         for (int i = 0; i < thrNum; i++)
         {
+            ts = new ThreadStart(Execute);
             pool[i] = new Thread(ts);
             pool[i].Start();
         }
@@ -29,30 +31,40 @@ class ThrPool
 
     public void AssyncInvoke(ThrWork action)
     {
-        Monitor.Enter(buffer);
-        if (bufIndex < buffer.Length)
+        lock (this)
         {
+
+            while (bufIndex == buffer.Length)
+            {
+                Monitor.Wait(this);
+            }
+
             buffer[bufIndex] = action;
             bufIndex++;
+            Monitor.PulseAll(this);
+
         }
-        else
-        {
-            bufIndex = 0;
-        }
-        Monitor.Exit(buffer);
     }
 
     public void Execute()
     {
         while (!end)
         {
-            Monitor.Enter(buffer);
-            if (bufIndex > 0)
+            lock (this)
             {
+                while (bufIndex == 0 || thrIndex == pool.Length)
+                {
+                    Monitor.Wait(this);
+                }
+
                 bufIndex--;
-                buffer[bufIndex]();
+                ThrWork ex = (ThrWork)buffer[bufIndex];
+                thrIndex++;
+                ex();
+                thrIndex--;
+
+                Monitor.PulseAll(this);
             }
-            Monitor.Exit(buffer);
         }
     }
 
@@ -100,7 +112,6 @@ class Test
     public static void Main()
     {
         ThrPool tpool = new ThrPool(5, 10);
-
         for (int i = 0; i < 10; i++)
         {
             A a = new A(i);
@@ -110,7 +121,7 @@ class Test
             tpool.AssyncInvoke(new ThrWork(b.DoWorkB));
         }
 
-        tpool.setEnd(true);
+        //tpool.setEnd(true);
         Console.ReadLine();
     }
 }
