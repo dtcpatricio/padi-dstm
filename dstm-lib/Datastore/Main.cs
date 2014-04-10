@@ -9,7 +9,7 @@ using System.Runtime.Remoting;
 
 namespace Datastore
 {
-    class Worker
+    class Main
     {
         static void Main(string[] args)
         {
