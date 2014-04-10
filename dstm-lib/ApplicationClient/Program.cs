@@ -17,6 +17,7 @@ namespace ApplicationClient
                 PadInt padint = PadiDstm.AccessPadInt(12);
                 int val = padint.Read();
                 System.Console.WriteLine(val);
+                System.Console.ReadLine();
             }
         }
     }
