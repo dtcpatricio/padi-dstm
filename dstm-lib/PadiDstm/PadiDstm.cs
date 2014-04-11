@@ -10,9 +10,8 @@ namespace Padi_dstm
     {
         // private bool txOpen = false; // placeholder
         private static Transaction _transaction;
-
         private static string _port;
-
+        
         public static Transaction Transaction
         {
             get { return _transaction; }
