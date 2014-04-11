@@ -38,8 +38,7 @@ namespace Datastore
         {
             // TODO: Register tentative read HERE
 
-            int val = 1; // palceholder. should be: database.get(uid).value
-
+            int val = storage.getValue(uid); // palceholder. should be: database.get(uid).value
             ITransactionValues client = (ITransactionValues)Activator.GetObject(typeof(ITransactionValues), clientURL);
             client.sendUpdatedVal(uid, val);
         }

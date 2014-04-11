@@ -12,14 +12,21 @@ namespace Padi_dstm
 {
     public class Transaction
     {
+        private int tx_id;
 
         public TransactionState State { get; private set; }
+        // maps padint uids with the values
         Dictionary<int, int> values = new Dictionary<int, int>();
 
         // Returns the dictionary of all the values (uid, value) kept in the current transaction
         public Dictionary<int, int> GetValues
         {
             get { return this.values; }
+        }
+
+        public int getTransactionId()
+        {
+            return tx_id;
         }
 
         // Adds or updates the value identified by the given uid
@@ -44,6 +51,12 @@ namespace Padi_dstm
                 "TransactionValues",
                 WellKnownObjectMode.Singleton);
 
+            IWorkerRegister remote = (IWorkerRegister)Activator.GetObject(
+                typeof(IWorkerRegister),
+                PadiDstm.Master_Url);
+
+            tx_id = remote.getNextTransactionId();
+            Console.WriteLine("Started new transaction with id : " + tx_id);
             // set the state of the transaction to ACTIVE
             State = TransactionState.ACIVE;
         }
@@ -51,10 +64,17 @@ namespace Padi_dstm
 
         internal int Read(PadInt padInt)
         {
-            string url = "tcp://localhost:" + PadiDstm.Port + "/TransactionValues";
-            string remotePadIntURL = "tcp://localhost:8087" + "/RemotePadInt";
-            //string remotePadIntURL = padInt.URL + "/RemotePadInt";
+            // If the transaction already contains the padint object then
+            // it will return its value
             int uid = padInt.UID;
+
+            if (values.ContainsKey(uid))
+            {
+                return values[uid];
+            }
+
+          //  string url = "tcp://localhost:" + PadiDstm.Port + "/TransactionValues";
+            string remotePadIntURL = "tcp://localhost:8087" + "/RemotePadInt";
 
             IRemotePadInt remote = (IRemotePadInt)Activator.GetObject(
                 typeof(IRemotePadInt),
@@ -62,10 +82,8 @@ namespace Padi_dstm
 
             // call the RemotePadInt to get the value
             // the worker server must send the value to TransactionValue Singleton
-            remote.Read(uid, url);
-
-            return values[uid]; // placeholder
-            //throw new NotImplementedException();
+            remote.Read(uid, PadiDstm.Client_Url);
+            return values[uid]; 
         }
 
         internal void Write(PadInt padInt, int val)

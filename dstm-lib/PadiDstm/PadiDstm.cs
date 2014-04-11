@@ -26,6 +26,16 @@ namespace Padi_dstm
             set { _port = value; }
         }
 
+        public static string Client_Url
+        {
+            get { return _client_url; }
+        }
+
+        public static string Master_Url
+        {
+            get { return _master_url; }
+        }
+
         public static bool Init()
         {
             System.Console.Write("Type in a port to use for TransactionValues object: ");
@@ -63,7 +73,7 @@ namespace Padi_dstm
             Console.WriteLine("Master Url: " + _master_url);
             Console.Write("remote : " + remote);
 
-            bool isCreated = remote.createPadIntMaster(uid, _client_url);
+            bool isCreated = remote.createPadIntMaster(_transaction.getTransactionId(), uid, _client_url);
             if (isCreated)
             {
                 Console.WriteLine("PadiDstm.CreatePadInt TRUE");
@@ -72,7 +82,7 @@ namespace Padi_dstm
             }
             else
             {
-                //Maybe throexception unable to create padint, uid already exists
+                //Maybe throwexception unable to create padint, uid already exists
                 return null;
             }
         }

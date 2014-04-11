@@ -9,6 +9,7 @@ namespace CommonTypes
     public interface IWorkerRegister
     {
         bool registerWorker(string url);
-        bool createPadIntMaster(int uid, string client_url);
+        bool createPadIntMaster(int tid, int uid, string client_url);
+        int getNextTransactionId();
     }
 }
