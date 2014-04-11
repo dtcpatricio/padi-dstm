@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommonTypes;
 
 namespace Padi_dstm
 {
@@ -12,6 +13,8 @@ namespace Padi_dstm
         private static Transaction _transaction;
 
         private static string _port;
+        private static string _master_url;
+        private static string _client_url;
         
         public static Transaction Transaction
         {
@@ -24,11 +27,23 @@ namespace Padi_dstm
             set { _port = value; }
         }
 
+        public static string Client_Url
+        {
+            get { return _client_url; }
+        }
+
+        public static string Master_Url
+        {
+            get { return _master_url; }
+        }
+
         public static bool Init()
         {
             System.Console.Write("Type in a port to use for TransactionValues object: ");
             string port = System.Console.ReadLine();
             PadiDstm.Port = port;
+            PadiDstm._master_url = "tcp://localhost:8086/WorkerRegister";
+            _client_url = "tcp://localhost:" + PadiDstm.Port + "/TransactionValues";
             return true;
         }
 
@@ -76,9 +91,25 @@ namespace Padi_dstm
 
         public static PadInt CreatePadInt(int uid)
         {
-            PadInt padint = new PadInt(uid);
-            return padint;
-          //  return null; // placeholder
+            IWorkerRegister remote = (IWorkerRegister)Activator.GetObject(
+                typeof(IWorkerRegister),
+                PadiDstm._master_url);
+
+            Console.WriteLine("Master Url: " + _master_url);
+            Console.Write("remote : " + remote);
+
+            bool isCreated = remote.createPadIntMaster(_transaction.getTransactionId(), uid, _client_url);
+            if (isCreated)
+            {
+                Console.WriteLine("PadiDstm.CreatePadInt TRUE");
+                PadInt padint = new PadInt(uid);
+                return padint;
+            }
+            else
+            {
+                //Maybe throwexception unable to create padint, uid already exists
+                return null;
+            }
         }
 
         public static PadInt AccessPadInt(int uid)

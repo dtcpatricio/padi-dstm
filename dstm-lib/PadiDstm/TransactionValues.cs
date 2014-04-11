@@ -11,6 +11,7 @@ namespace Padi_dstm
     {
         public void sendUpdatedVal(int uid, int val)
         {
+            Console.WriteLine("**TransactionValues called with uid: " + uid + " val: " + val);
             PadiDstm.Transaction.AddValue(uid, val);
             // access the _transaction object on PadiDstm
             // get the PadInt with uid

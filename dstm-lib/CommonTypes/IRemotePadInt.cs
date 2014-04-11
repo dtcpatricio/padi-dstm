@@ -10,5 +10,6 @@ namespace CommonTypes
     {
         void Read(int uid, string clientURL);
         void Write(int uid, int newVal, string clientURL);
+        void createPadIntWorker(int uid, string client_url);
     }
 }

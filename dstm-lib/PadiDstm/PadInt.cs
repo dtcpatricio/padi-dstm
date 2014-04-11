@@ -15,9 +15,9 @@ namespace Padi_dstm
         private string url; // URL of worker server. Not sure if needed
 
         // placeholder constructor for testing
-        public PadInt(int val)
+        public PadInt(int uid)
         {
-            _value = val;
+            _uid = uid;
         }
 
         public string URL { get { return url; } }
