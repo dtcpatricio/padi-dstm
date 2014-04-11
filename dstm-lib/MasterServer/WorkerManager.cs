@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MasterServer
+namespace CommonTypes
 {
     class WorkerManager
     {
@@ -26,9 +26,17 @@ namespace MasterServer
         }
 
         // Assign to server uid in a round robin fashion
-        public void assignServer(int uid)
+        public bool assignWorker(int uid)
         {
-            addUid(uid, getNextAvailableWorker());
+            //addUid(uid, getNextAvailableWorker());
+            if (!padIntUids.ContainsKey(uid))
+            {
+                string availableWorker = getNextAvailableWorker();
+                Console.WriteLine("UID: " + uid + " AvailableWorker : " + availableWorker);
+                padIntUids.Add(uid, availableWorker);
+                return true;
+            }
+            return false;
         }
 
         public void addUid(int uid, string url)
@@ -64,7 +72,8 @@ namespace MasterServer
                 nextAvailableWorker++;
             }
 
-            return workers[nextAvailableWorker];
+           // return workers[nextAvailableWorker];
+            return workers[0]; // placeholder
         }
 
         public List<string> getWorkers()
@@ -75,6 +84,11 @@ namespace MasterServer
         public string getWorker(int index)
         {
             return workers[index];
+        }
+
+        public string getWorkerUrl(int uid)
+        {
+            return padIntUids[uid];
         }
     }
 }

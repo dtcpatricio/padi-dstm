@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting;
-using MasterServer;
+using CommonTypes;
 
 namespace Datastore
 {
     class Worker
     {
+        public static string _worker_url;
+
         static void Main(string[] args)
         {
             System.Console.Write("Type in this worker server port: ");
@@ -26,12 +28,12 @@ namespace Datastore
                 WellKnownObjectMode.Singleton);
 
             // To register worker server
-            IWorkerRegister workerManager = (IWorkerRegister)Activator.GetObject(typeof(IWorkerRegister), "tcp://localhost:8086/WorkerRegister");
-            string myURL = "";
-            myURL = "tcp://localhost:" + port + "/RemotePadInt";
+            IWorkerRegister workerManager = (IWorkerRegister)Activator.GetObject(
+                    typeof(IWorkerRegister), "tcp://localhost:8086/WorkerRegister");
+            _worker_url = "tcp://localhost:" + port + "/RemotePadInt";
 
-            workerManager.registerWorker(myURL);
-            System.Console.WriteLine("Registered RemotePadInt on " + myURL);
+            workerManager.registerWorker(_worker_url);
+            System.Console.WriteLine("Registered RemotePadInt on " + _worker_url);
 
             // Quit message and waits for a key press
             System.Console.WriteLine("<enter> to kill the server");

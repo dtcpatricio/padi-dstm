@@ -8,6 +8,6 @@ namespace CommonTypes
 {
     public interface ITransactionValues
     {
-        void sendUpdatedVal(int val, int uid);
+        void sendUpdatedVal(int uid, int val);
     }
 }

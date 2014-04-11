@@ -10,6 +10,29 @@ namespace Datastore
 {
     class RemotePadInt : MarshalByRefObject, IRemotePadInt
     {
+        PadIntStorage storage;
+
+        public RemotePadInt()
+        {
+            storage = new PadIntStorage();
+        }
+
+        public string getWorkerUrl()
+        {
+            return Datastore.Worker._worker_url;
+        }
+
+        // -1 means that we have createad a PadInt uninitialized
+        public void createPadIntWorker(int uid, string client_url)
+        {
+            storage.addPadInt(uid, -1);
+            ITransactionValues remote = (ITransactionValues)Activator.GetObject(
+                typeof(ITransactionValues),
+                client_url);
+
+            Console.WriteLine("RemotePadInt.createPadInt uid: " + uid + " " + client_url);
+            remote.sendUpdatedVal(uid, storage.getValue(uid));
+        }
 
         public void Read(int uid, string clientURL)
         {

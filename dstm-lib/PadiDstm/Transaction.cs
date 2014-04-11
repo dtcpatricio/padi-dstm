@@ -52,7 +52,7 @@ namespace Padi_dstm
         internal int Read(PadInt padInt)
         {
             string url = "tcp://localhost:" + PadiDstm.Port + "/TransactionValues";
-            string remotePadIntURL = "tcp://localhost:8086" + "/RemotePadInt";
+            string remotePadIntURL = "tcp://localhost:8087" + "/RemotePadInt";
             //string remotePadIntURL = padInt.URL + "/RemotePadInt";
             int uid = padInt.UID;
 
@@ -70,6 +70,7 @@ namespace Padi_dstm
 
         internal void Write(PadInt padInt, int val)
         {
+            /*
             string url = "tcp://localhost:" + PadiDstm.Port + "/TransactionValues";
             string remotePadIntURL = padInt.URL + "/RemotePadInt";
             int uid = padInt.UID;
@@ -81,6 +82,7 @@ namespace Padi_dstm
             // maybe the new val could come from TransactionValue ...
             remote.Write(uid, val, url);
             //throw new NotImplementedException();
+        */
         }
     }
 }
