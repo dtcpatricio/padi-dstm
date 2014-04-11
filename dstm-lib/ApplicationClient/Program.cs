@@ -14,9 +14,11 @@ namespace ApplicationClient
             if (PadiDstm.Init())
             {
                 PadiDstm.TxBegin();
-                PadInt padint = PadiDstm.AccessPadInt(12);
+                PadInt padint = PadiDstm.CreatePadInt(12);
                 int val = padint.Read();
-                System.Console.WriteLine(val);
+
+                Console.WriteLine(val);
+                Console.ReadLine();
             }
         }
     }

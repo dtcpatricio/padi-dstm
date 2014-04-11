@@ -16,6 +16,7 @@ namespace Padi_dstm
         {
             get { return _transaction; }
         }
+
         public static string Port
         {
             get { return _port; }
@@ -29,6 +30,7 @@ namespace Padi_dstm
             PadiDstm.Port = port;
             return true;
         }
+
         public static bool TxBegin()
         {
             _transaction = new Transaction();
@@ -37,6 +39,8 @@ namespace Padi_dstm
 
         public static bool TxCommit()
         {
+            // Check in the master server if the current transaction
+            // has performed any conflicting operations
             return true; // placeholder
         }
 
@@ -47,7 +51,9 @@ namespace Padi_dstm
 
         public static PadInt CreatePadInt(int uid)
         {
-            return null; // placeholder
+            PadInt padint = new PadInt(uid);
+            return padint;
+          //  return null; // placeholder
         }
 
         public static PadInt AccessPadInt(int uid)

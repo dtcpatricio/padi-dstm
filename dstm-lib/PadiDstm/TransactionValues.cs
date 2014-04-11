@@ -9,8 +9,9 @@ namespace Padi_dstm
 {
     class TransactionValues : MarshalByRefObject, ITransactionValues
     {
-        public void sendUpdatedVal(int val, int uid)
+        public void sendUpdatedVal(int uid, int val)
         {
+            PadiDstm.Transaction.AddValue(uid, val);
             // access the _transaction object on PadiDstm
             // get the PadInt with uid
             // update it's value

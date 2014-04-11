@@ -18,7 +18,7 @@ namespace Datastore
             int val = 1; // palceholder. should be: database.get(uid).value
 
             ITransactionValues client = (ITransactionValues)Activator.GetObject(typeof(ITransactionValues), clientURL);
-            client.sendUpdatedVal(val, uid);
+            client.sendUpdatedVal(uid, val);
         }
 
         public void Write(int uid, int newVal, string clientURL)

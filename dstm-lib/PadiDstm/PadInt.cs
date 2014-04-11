@@ -17,7 +17,6 @@ namespace Padi_dstm
         // placeholder constructor for testing
         public PadInt(int val)
         {
-            
             _value = val;
         }
 
