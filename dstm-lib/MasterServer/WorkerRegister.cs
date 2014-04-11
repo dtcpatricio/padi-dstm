@@ -61,5 +61,36 @@ namespace MasterServer
             worker.Recover();
             return wm.recover(url);
         }
+
+        // It should return an exception instead of carrying around bool values
+        // Missing : add the uid object to the given transaction
+        public bool createPadIntMaster(int txid, int uid, string client_url)
+        {
+            Console.WriteLine("Arrived at master with uid: " + uid);
+            string worker_url;
+            bool isAssigned = wm.assignWorker(uid);
+            Console.WriteLine(isAssigned);
+            if (isAssigned)
+            {
+                worker_url = wm.getWorkerUrl(uid);
+
+                IRemotePadInt remote = (IRemotePadInt)Activator.GetObject(
+                typeof(IRemotePadInt),
+                worker_url);
+
+                Console.WriteLine("createPadIntMaster txid: " + txid);
+                wm.addTransactionUid(txid, uid);
+
+                Console.WriteLine("Calling Worker Url: " + worker_url);
+                remote.createPadIntWorker(uid, client_url);
+                return true;
+            }
+            return false;
+        }
+
+        public int getNextTransactionId()
+        {
+            return wm.getNextTransactionId();
+        }
     }
 }

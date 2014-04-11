@@ -12,5 +12,7 @@ namespace MasterServer
         bool setFail(string url);
         bool setFreeze(string url);
         bool setRecover(string url);
+        int getNextTransactionId();
+        bool createPadIntMaster(int tid, int uid, string client_url);
     }
 }

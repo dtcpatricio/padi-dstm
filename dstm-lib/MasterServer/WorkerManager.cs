@@ -21,11 +21,17 @@ namespace MasterServer
         // Index to workers refering to the next available worker
         private int nextAvailableWorker;
 
+        // Maps Id of transactions with the array of Transaction UID's 
+        // in order for the commit operation be able to identify all objects
+        // belonging to the transaction
+        private IDictionary<int, ArrayList> transactions;
+
         public WorkerManager()
         {
             padIntUids = new Dictionary<int, string>();
             available_workers = new List<string>();
             failed_workers = new List<string>();
+            transactions = new Dictionary<int, ArrayList>();
             nextAvailableWorker = -1;
         }
 
@@ -149,6 +155,44 @@ namespace MasterServer
             }
             Console.WriteLine("URL " + url + " does not exist.");
             return false;
+        }
+
+        // Assign a new transaction id
+        public int getNextTransactionId()
+        {
+            int new_id;
+            lock (this)
+            {
+                new_id = transactions.Count;
+                ArrayList newArray = new ArrayList();
+                transactions.Add(new_id, newArray);
+            }
+            return new_id;
+        }
+
+        public void addTransactionUid(int txid, int uid)
+        {
+            ArrayList uidArray = transactions[txid];
+            uidArray.Add(uid);
+        }
+
+        // Assign to server uid in a round robin fashion
+        public bool assignWorker(int uid)
+        {
+            //addUid(uid, getNextAvailableWorker());
+            if (!padIntUids.ContainsKey(uid))
+            {
+                string availableWorker = getNextAvailableWorker();
+                Console.WriteLine("UID: " + uid + " AvailableWorker : " + availableWorker);
+                padIntUids.Add(uid, availableWorker);
+                return true;
+            }
+            return false;
+        }
+
+        public string getWorkerUrl(int uid)
+        {
+            return padIntUids[uid];
         }
     }
 }
