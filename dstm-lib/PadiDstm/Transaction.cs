@@ -14,6 +14,22 @@ namespace Padi_dstm
     {
 
         public TransactionState State { get; private set; }
+        Dictionary<int, int> values = new Dictionary<int, int>();
+
+        // Returns the dictionary of all the values (uid, value) kept in the current transaction
+        public Dictionary<int, int> GetValues
+        {
+            get { return this.values; }
+        }
+
+        // Adds or updates the value identified by the given uid
+        public void AddValue(int uid, int value)
+        {
+            if (values.ContainsKey(uid))
+                values[uid] = value;
+            else 
+                values.Add(uid, value);
+        }
 
         public Transaction()
         {
@@ -48,7 +64,7 @@ namespace Padi_dstm
             // the worker server must send the value to TransactionValue Singleton
             remote.Read(uid, url);
 
-            return uid; // placeholder
+            return values[uid]; // placeholder
             //throw new NotImplementedException();
         }
 
