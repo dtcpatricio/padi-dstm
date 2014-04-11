@@ -9,5 +9,8 @@ namespace MasterServer
     public interface IWorkerRegister
     {
         bool registerWorker(string url);
+        bool setFail(string url);
+        bool setFreeze(string url);
+        bool setRecover(string url);
     }
 }

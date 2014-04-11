@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
+using MasterServer;
 using CommonTypes;
 
 namespace Padi_dstm
@@ -81,6 +82,29 @@ namespace Padi_dstm
             // maybe the new val could come from TransactionValue ...
             remote.Write(uid, val, url);
             //throw new NotImplementedException();
+        }
+
+        // Not sure if this should be in the context of a transaction
+        // Confirm
+        internal bool Fail(string url)
+        {
+            IWorkerRegister workerManager = (IWorkerRegister)Activator.GetObject(typeof(IWorkerRegister), "tcp://localhost:8086/WorkerRegister");
+
+            return workerManager.setFail(url);
+        }
+
+        internal bool Freeze(string url)
+        {
+            IWorkerRegister workerManager = (IWorkerRegister)Activator.GetObject(typeof(IWorkerRegister), "tcp://localhost:8086/WorkerRegister");
+
+            return workerManager.setFreeze(url);
+        }
+
+        internal bool Recover(string url)
+        {
+            IWorkerRegister workerManager = (IWorkerRegister)Activator.GetObject(typeof(IWorkerRegister), "tcp://localhost:8086/WorkerRegister");
+
+            return workerManager.setRecover(url);
         }
     }
 }

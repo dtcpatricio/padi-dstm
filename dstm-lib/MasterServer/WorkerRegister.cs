@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommonTypes;
 
 namespace MasterServer
 {
@@ -18,7 +19,7 @@ namespace MasterServer
         // Returns true if worker was added successfully, false otherwise
         public bool registerWorker(string url)
         {
-            if (wm.registerWorker(url))
+            if (wm.addAvailableWorker(url))
             {
                 Console.WriteLine("Worker in url " + url + " added.");
                 printAvailableWorkers();
@@ -38,6 +39,27 @@ namespace MasterServer
             {
                 Console.WriteLine("\t" + wm.getWorker(i));
             }
+        }
+
+        public bool setFail(string url)
+        {
+            IRemoteOperations worker = (IRemoteOperations)Activator.GetObject(typeof(IRemoteOperations), url);
+            worker.Fail();
+            return wm.fail(url);
+        }
+
+        public bool setFreeze(string url)
+        {
+            IRemoteOperations worker = (IRemoteOperations)Activator.GetObject(typeof(IRemoteOperations), url);
+            worker.Freeze();
+            return wm.freeze(url);
+        }
+
+        public bool setRecover(string url)
+        {
+            IRemoteOperations worker = (IRemoteOperations)Activator.GetObject(typeof(IRemoteOperations), url);
+            worker.Recover();
+            return wm.recover(url);
         }
     }
 }

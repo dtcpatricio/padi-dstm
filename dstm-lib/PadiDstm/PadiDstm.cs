@@ -10,6 +10,7 @@ namespace Padi_dstm
     {
         // private bool txOpen = false; // placeholder
         private static Transaction _transaction;
+
         private static string _port;
         
         public static Transaction Transaction
@@ -47,6 +48,30 @@ namespace Padi_dstm
         public static bool TxAbort()
         {
             return true; // placeholder
+        }
+
+        public static bool Status()
+        {
+            // TODO: implement class Status presented in CommonTypes
+            return true;
+        }
+
+        public static bool Fail(string url)
+        {
+            // In context of a transaction?
+            return _transaction.Fail(url); ;
+        }
+
+        public static bool Freeze(string url)
+        {
+            // In context of a transaction?
+            return _transaction.Freeze(url); ;
+        }
+
+        public static bool Recover(string url)
+        {
+            // In context of a transaction?
+            return _transaction.Recover(url); ;
         }
 
         public static PadInt CreatePadInt(int uid)
