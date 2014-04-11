@@ -16,7 +16,14 @@ namespace MasterServer
             TcpChannel channel = new TcpChannel(8086);
             ChannelServices.RegisterChannel(channel, true);
 
-            System.Console.WriteLine("Server running");
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(WorkerRegister),
+                "WorkerRegister",
+                WellKnownObjectMode.Singleton);
+
+            System.Console.WriteLine("Registered Master Server on tcp://localhost:8086/WorkerRegister");
+
+            System.Console.WriteLine("Master Server running");
             System.Console.ReadLine();
 
         }

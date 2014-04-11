@@ -57,6 +57,10 @@
       <Project>{0a5edf68-29cd-4ea9-a05f-dd0f0bf0d4a2}</Project>
       <Name>CommonTypes</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MasterServer\MasterServer.csproj">
+      <Project>{e55b482c-cca3-45f3-8d8d-116f5ab3e456}</Project>
+      <Name>MasterServer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PadiDstm\Padi_dstm.csproj">
       <Project>{3e5630d1-3556-4370-b10d-acb1f799d5f8}</Project>
       <Name>Padi_dstm</Name>
