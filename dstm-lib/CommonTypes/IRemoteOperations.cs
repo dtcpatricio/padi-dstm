@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace CommonTypes
 {
-    public interface ITransactionValues
+    public interface IRemoteOperations
     {
-        void sendUpdatedVal(int val, int uid);
+        void Fail();
+        void Freeze();
+        void Recover();
     }
 }

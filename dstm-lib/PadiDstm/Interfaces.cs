@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Padi_dstm
+namespace PADI_DSTM
 {
 
     interface IServerCtrlOps

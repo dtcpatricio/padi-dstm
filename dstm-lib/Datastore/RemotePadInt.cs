@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CommonTypes;
+using CommonTypes.LibraryDatastore;
 
 
 namespace Datastore
@@ -11,21 +11,24 @@ namespace Datastore
     class RemotePadInt : MarshalByRefObject, IRemotePadInt
     {
 
-        public void Read(int uid, string clientURL)
+        public int Read(int uid, int txID, string clientURL)
         {
-            // TODO: Register tentative read HERE
+            
+            int val = Datastore.regTentativeRead(uid, txID, clientURL);
 
-            int val = 1; // palceholder. should be: database.get(uid).value
-
-            ITransactionValues client = (ITransactionValues)Activator.GetObject(typeof(ITransactionValues), clientURL);
-            client.sendUpdatedVal(val, uid);
+            return val;
         }
 
-        public void Write(int uid, int newVal, string clientURL)
+        public void Write(int uid, int txID, int newVal, string clientURL)
         {
-            // TODO: Register tentative write HERE
+            
+            bool success = Datastore.regTentativeWrite(uid, newVal, txID, clientURL);
 
-            // should be: database.get(uid) = newVal
+            if (!success)
+            {
+                IEndTransaction client = (IEndTransaction)Activator.GetObject(typeof(IEndTransaction), clientURL);
+                client.abort();
+            }
         }
     }
 }

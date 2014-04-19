@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>Datastore.Main</StartupObject>
+    <StartupObject>Datastore.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,11 +45,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="2PC\Coordinator.cs" />
     <Compile Include="Datastore.cs" />
+    <Compile Include="2PC\ICoordinator.cs" />
+    <Compile Include="2PC\IParticipant.cs" />
+    <Compile Include="2PC\Participant.cs" />
+    <Compile Include="DatastoreOps.cs" />
     <Compile Include="RemotePadInt.cs" />
-    <Compile Include="Main.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerObject.cs" />
     <Compile Include="TentativeTx.cs" />
+    <Compile Include="2PC\TransactionManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

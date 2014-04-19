@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PADI_DSTM
+namespace CommonTypes.LibraryDatastore
 {
-    public enum TransactionState
+    public interface IPadInt
     {
-        ACTIVE,
-        COMMITED,
-        ABORTED
+        int Read();
+        void Write(int val);
     }
 }

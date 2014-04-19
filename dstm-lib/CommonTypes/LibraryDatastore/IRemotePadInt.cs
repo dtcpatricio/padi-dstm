@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CommonTypes
+namespace CommonTypes.LibraryDatastore
 {
     public interface IRemotePadInt
     {
-        void Read(int uid, string clientURL);
-        void Write(int uid, int newVal, string clientURL);
+        int Read(int uid, int txID, string clientURL);
+        void Write(int uid, int txID, int newVal, string clientURL);
     }
 }
