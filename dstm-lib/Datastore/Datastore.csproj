@@ -46,7 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="2PC\Coordinator.cs" />
-    <Compile Include="2PC\Decision.cs" />
+    <Compile Include="2PC\CoordinatorManager.cs" />
+    <Compile Include="2PC\TransactionDecision.cs" />
+    <Compile Include="2PC\ParticipantManager.cs" />
     <Compile Include="2PC\ParticipantResponse.cs" />
     <Compile Include="Datastore.cs" />
     <Compile Include="2PC\ICoordinator.cs" />
@@ -58,7 +60,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerObject.cs" />
     <Compile Include="TentativeTx.cs" />
-    <Compile Include="2PC\TransactionManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

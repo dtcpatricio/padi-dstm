@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Datastore
 {
-    public enum DecisionState
+    public enum TransactionDecision
     {
+        DEFAULT,    // without decision
         COMMIT,
         ABORT
     }

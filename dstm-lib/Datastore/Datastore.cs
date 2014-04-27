@@ -10,20 +10,13 @@ namespace Datastore
     {
 
         // TODO: refactor to use generic list classes and HashSet
+        // Map transaction id with its tentative reads/writes
         private static IDictionary<int, TentativeTx> _tentativeTransactions = new Dictionary<int, TentativeTx>();
 
         private static List<ServerObject> _serverObjects = new List<ServerObject>();
 
         // maybe it should not be here
         private static string _serverURL;
-
-        // Transaction Manager global test
-        private static TransactionManager _tm;
-
-        internal static TransactionManager TRANSACTIONMANAGER
-        {
-            get { return _tm; }
-        }
 
         internal static string SERVERURL
         {
@@ -134,51 +127,76 @@ namespace Datastore
         }
 
 
-        /**
+
+        /**********************************************************************
          * 2PC protocol section
          * TODO: Maybe it could be in another section (like a different class)
-         */
+         **********************************************************************/
+        
+        /**********************************************************************
+         * COORDINATOR part
+         **********************************************************************/
+
+        // This method is only called by the coordinator
+        // URLs is the list of participants of transaction txID
         internal static bool Commit(int txID, List<String> URLs)
         {
             TentativeTx tx = _tentativeTransactions[txID];
-            _tm = new TransactionManager(tx, URLs);
-            _tm.addTransactionURLs(tx, URLs);
-            _tm.prepare();
-
+            tx.COORDINATOR = new CoordinatorManager(URLs);
+            tx.COORDINATOR.prepare();
+            tx.COORDINATOR.commit();
             return true;
         }
+
+        internal static void participantVoteYes(int txID, String URL)
+        {
+            TentativeTx tx = _tentativeTransactions[txID];
+            tx.COORDINATOR.participantYes(URL);
+        }
+
+        internal static void participantVoteNo(int txID, String URL)
+        {
+            TentativeTx tx = _tentativeTransactions[txID];
+            tx.COORDINATOR.participantNo(URL);
+        }
+
+        internal static bool haveCommitted(int txID, String url)
+        {
+            TentativeTx tx = _tentativeTransactions[txID];
+            return tx.COORDINATOR.haveCommitted(url);
+        }
+
+        /***********************************************************************
+         * PARTICIPANT part
+         ***********************************************************************/
 
         /**
          * canCommit
          * @param txID id of the transaction to commit
          * @coordURL url of the coordinator server in the protocol
          * 
-         * this method is called by the participants to commit their values
+         * this method is called from coordinator to participants to commit their values
          * and reply to the coordinator with an answer of success
          **/
-        internal static void canCommit(int txID, string coordURL)
+        internal static bool canCommit(int txID, string coordURL)
         {
             TentativeTx tx = _tentativeTransactions[txID];
-            _tm = new TransactionManager(tx);
-            _tm.addTransaction(tx);
-            ICoordinator coord = (ICoordinator)Activator.GetObject(typeof(ICoordinator), coordURL);
-            if (_tm.canCommit())
-                coord.sendYes(txID, SERVERURL);
-            else
-                coord.sendNo(txID, SERVERURL);
-
+            tx.PARTICIPANT = new ParticipantManager();
+            tx.PARTICIPANT.COORDINATORURL = coordURL;
+            return tx.PARTICIPANT.canCommit();
         }
 
-        // Only for participants
-        internal static void DoCommit(int txID, string coordURL)
+        internal static void doCommit(int txID, string coordURL)
         {
-            // changes of tentative tx made permanent
+            TentativeTx tx = _tentativeTransactions[txID];
+            tx.PARTICIPANT.doCommit(txID, coordURL);
         }
 
-        // Only for participants
-        internal static void DoAbort(int txID, string coordURL)
+        internal static void doAbort(int txID, string coordURL)
         {
-            // delete tentative tx
+            TentativeTx tx = _tentativeTransactions[txID];
+            tx.PARTICIPANT.doAbort(txID, coordURL);
         }
+        
     }
 }

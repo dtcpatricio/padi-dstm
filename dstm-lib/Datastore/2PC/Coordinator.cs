@@ -10,17 +10,17 @@ namespace Datastore
     {
         public void sendYes(int txID, string url)
         {
-            Datastore.TRANSACTIONMANAGER.voteYes(url);
+            Datastore.participantVoteYes(txID, url);
         }
         
         public void sendNo(int txID, string url)
         {
-            Datastore.TRANSACTIONMANAGER.voteNo(url);
+            Datastore.participantVoteYes(txID, url);
         }
 
         public void haveCommitted(int txID, string url)
         {
-
+            Datastore.haveCommitted(txID, url);
         }
     }
 }
