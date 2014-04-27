@@ -17,6 +17,13 @@ namespace Datastore
         // maybe it should not be here
         private static string _serverURL;
 
+        // Transaction Manager global test
+        private static TransactionManager _tm;
+
+        internal static TransactionManager TRANSACTIONMANAGER
+        {
+            get { return _tm; }
+        }
 
         internal static string SERVERURL
         {
@@ -134,8 +141,9 @@ namespace Datastore
         internal static bool Commit(int txID, List<String> URLs)
         {
             TentativeTx tx = _tentativeTransactions[txID];
-            TransactionManager tm = new TransactionManager(tx, URLs);
-            tm.prepare();
+            _tm = new TransactionManager(tx, URLs);
+            _tm.addTransactionURLs(tx, URLs);
+            _tm.prepare();
 
             return true;
         }
@@ -151,20 +159,26 @@ namespace Datastore
         internal static void canCommit(int txID, string coordURL)
         {
             TentativeTx tx = _tentativeTransactions[txID];
-            TransactionManager tm = new TransactionManager(tx);
-
+            _tm = new TransactionManager(tx);
+            _tm.addTransaction(tx);
             ICoordinator coord = (ICoordinator)Activator.GetObject(typeof(ICoordinator), coordURL);
-            if (tm.canCommit())
+            if (_tm.canCommit())
                 coord.sendYes(txID, SERVERURL);
             else
                 coord.sendNo(txID, SERVERURL);
 
         }
 
+        // Only for participants
         internal static void DoCommit(int txID, string coordURL)
         {
-            // do nothing for now
+            // changes of tentative tx made permanent
         }
 
+        // Only for participants
+        internal static void DoAbort(int txID, string coordURL)
+        {
+            // delete tentative tx
+        }
     }
 }

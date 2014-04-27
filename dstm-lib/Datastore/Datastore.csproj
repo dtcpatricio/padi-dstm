@@ -46,6 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="2PC\Coordinator.cs" />
+    <Compile Include="2PC\Decision.cs" />
+    <Compile Include="2PC\ParticipantResponse.cs" />
     <Compile Include="Datastore.cs" />
     <Compile Include="2PC\ICoordinator.cs" />
     <Compile Include="2PC\IParticipant.cs" />
