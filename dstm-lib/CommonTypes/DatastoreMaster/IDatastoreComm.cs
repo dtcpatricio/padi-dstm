@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PADI_DSTM
+namespace CommonTypes.DatastoreMaster
 {
-    public enum TransactionState
+    public interface IDatastoreComm
     {
-        ACTIVE,
-        COMMITED,
-        ABORTED
+        bool registerWorker(string url);
     }
 }

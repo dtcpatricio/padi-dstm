@@ -7,192 +7,49 @@ using System.Threading.Tasks;
 
 namespace MasterServer
 {
-    class WorkerManager
+    internal static class WorkerManager
     {
+        // Identifiers for servers
+        static private int serverID = 0;
+
         // Maps uid with worker references
-        private IDictionary<int, string> padIntUids;
+        //static private IDictionary<int, string> padIntUids = new Dictionary<int, string>();
 
         // List of available workers
-        private List<string> available_workers;
+        static private IDictionary<int, string> availableServers = new Dictionary<int, string>();
 
         // List of failed workers
-        private List<string> failed_workers;
+        static private IDictionary<int, string> failedServers = new Dictionary<int, string>();
 
-        // Index to workers refering to the next available worker
-        private int nextAvailableWorker;
 
-        // Maps Id of transactions with the array of Transaction UID's 
-        // in order for the commit operation be able to identify all objects
-        // belonging to the transaction
-        private IDictionary<int, ArrayList> transactions;
-
-        public WorkerManager()
+        /*
+        static public void printAvailableWorkers()
         {
-            padIntUids = new Dictionary<int, string>();
-            available_workers = new List<string>();
-            failed_workers = new List<string>();
-            transactions = new Dictionary<int, ArrayList>();
-            nextAvailableWorker = -1;
-        }
-
-        // Assign to server uid in a round robin fashion
-        public void assignServer(int uid)
-        {
-            addUid(uid, getNextAvailableWorker());
-        }
-
-        public void addUid(int uid, string url)
-        {
-            padIntUids.Add(uid, url);
-        }
-
-        public string getUidUrl(int uid)
-        {
-            return padIntUids[uid];
-        }
-
-        // Returns true if worker was added successfully, false otherwise
-        public bool addAvailableWorker(string url)
-        {
-            if (available_workers.Contains(url))
+            Console.WriteLine("Available workers: ");
+            for (int i = 0; i < getWorkers().Count; i++)
             {
-                return false;
+                Console.WriteLine("\t" + getAvailableWorker(i) + ".");
             }
-            available_workers.Add(url);
-            return true;
         }
+        */
 
-        // returns url of the next available worker, following a round robin fashion
-        public string getNextAvailableWorker()
+        internal static bool addServer(string url)
         {
-            if (nextAvailableWorker == available_workers.Count)
+            if (!availableServers.Values.Contains(url) &&
+                !failedServers.Values.Contains(url))
             {
-                nextAvailableWorker = 0;
+                int id = serverID++;
+                availableServers.Add(id, url);
+                Console.WriteLine("A Datastore Server was added on " + url + "\r\nwith ID " + id);
+                return true;
             }
             else
-            {
-                nextAvailableWorker++;
-            }
-
-            return available_workers[nextAvailableWorker];
+                return false;
         }
 
-        public List<string> getWorkers()
+        internal static IDictionary<int, string> getAvailableServers()
         {
-            return available_workers;
-        }
-
-        public string getWorker(int index)
-        {
-            return available_workers[index];
-        }
-
-        public bool availableWorkerExists(string url)
-        {
-            if (available_workers.Contains(url))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public bool failedWorkerExists(string url)
-        {
-            if (failed_workers.Contains(url))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public void removeAvailableWorker(string url) {
-            available_workers.Remove(url);
-        }
-
-        public void removeFailedWorker(string url)
-        {
-            failed_workers.Remove(url);
-        }
-
-        public void addFailedWorker(string url) {
-            failed_workers.Add(url);
-        }
-
-        public bool fail(string url)
-        {
-            if (availableWorkerExists(url))
-            {
-                removeAvailableWorker(url);
-                addFailedWorker(url);
-                Console.WriteLine("URL " + url + " out of service.");
-                return true;
-            }
-            Console.WriteLine("URL " + url + " does not exist.");
-            return false;
-        }
-
-        public bool freeze(string url)
-        {
-            if (availableWorkerExists(url))
-            {
-                removeAvailableWorker(url);
-                addFailedWorker(url);   // inform is freezed
-                Console.WriteLine("URL " + url + " freezed.");
-                return true;
-            }
-            Console.WriteLine("URL " + url + " does not exist.");
-            return false;
-        }
-
-        public bool recover(string url)
-        {
-            if (failedWorkerExists(url))
-            {
-                removeFailedWorker(url);
-                addAvailableWorker(url);
-                Console.WriteLine("URL " + url + " has recovered.");
-                return true;
-            }
-            Console.WriteLine("URL " + url + " does not exist.");
-            return false;
-        }
-
-        // Assign a new transaction id
-        public int getNextTransactionId()
-        {
-            int new_id;
-            lock (this)
-            {
-                new_id = transactions.Count;
-                ArrayList newArray = new ArrayList();
-                transactions.Add(new_id, newArray);
-            }
-            return new_id;
-        }
-
-        public void addTransactionUid(int txid, int uid)
-        {
-            ArrayList uidArray = transactions[txid];
-            uidArray.Add(uid);
-        }
-
-        // Assign to server uid in a round robin fashion
-        public bool assignWorker(int uid)
-        {
-            //addUid(uid, getNextAvailableWorker());
-            if (!padIntUids.ContainsKey(uid))
-            {
-                string availableWorker = getNextAvailableWorker();
-                Console.WriteLine("UID: " + uid + " AvailableWorker : " + availableWorker);
-                padIntUids.Add(uid, availableWorker);
-                return true;
-            }
-            return false;
-        }
-
-        public string getWorkerUrl(int uid)
-        {
-            return padIntUids[uid];
+            return availableServers;
         }
     }
 }

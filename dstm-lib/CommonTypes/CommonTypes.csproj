@@ -39,13 +39,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPadInt.cs" />
+    <Compile Include="DatastoreMaster\IDatastoreComm.cs" />
+    <Compile Include="LibraryDatastore\IDatastoreOps.cs" />
+    <Compile Include="LibraryDatastore\IPadInt.cs" />
     <Compile Include="IRemoteOperations.cs" />
-    <Compile Include="IRemotePadInt.cs" />
-    <Compile Include="ITransactionValues.cs" />
+    <Compile Include="LibraryDatastore\IRemotePadInt.cs" />
+    <Compile Include="LibraryDatastore\IEndTransaction.cs" />
+    <Compile Include="LibraryMaster\ILibraryComm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Status.cs" />
+    <Compile Include="TxException.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

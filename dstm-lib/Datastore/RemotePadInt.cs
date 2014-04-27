@@ -3,77 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CommonTypes;
+using CommonTypes.LibraryDatastore;
 
 
 namespace Datastore
 {
-    // TODO: Change name
-    class RemotePadInt : MarshalByRefObject, IRemotePadInt, IRemoteOperations
+    class RemotePadInt : MarshalByRefObject, IRemotePadInt
     {
-        private WorkerState _state;
 
-        PadIntStorage storage;
-
-        public RemotePadInt()
+        public int Read(int uid, int txID, string clientURL)
         {
-            _state = WorkerState.ACTIVE;
-            storage = new PadIntStorage();
+            
+            int val = Datastore.regTentativeRead(uid, txID, clientURL);
+
+            return val;
         }
 
-        public string getWorkerUrl()
+        public void Write(int uid, int txID, int newVal, string clientURL)
         {
-            return Datastore.Worker._worker_url;
-        }
+            
+            bool success = Datastore.regTentativeWrite(uid, newVal, txID, clientURL);
 
-        // -1 means that we have createad a PadInt uninitialized
-        public void createPadIntWorker(int uid, string client_url)
-        {
-            storage.addPadInt(uid, -1);
-            ITransactionValues remote = (ITransactionValues)Activator.GetObject(
-                typeof(ITransactionValues),
-                client_url);
-
-            Console.WriteLine("RemotePadInt.createPadInt uid: " + uid + " " + client_url);
-            remote.sendUpdatedVal(uid, storage.getValue(uid));
-        }
-
-        public void Read(int uid, string clientURL)
-        {
-            // TODO: Register tentative read HERE
-
-            int val = storage.getValue(uid); // palceholder. should be: database.get(uid).value
-            ITransactionValues client = (ITransactionValues)Activator.GetObject(typeof(ITransactionValues), clientURL);
-            client.sendUpdatedVal(uid, val);
-        }
-
-        public void Write(int uid, int newVal, string clientURL)
-        {
-            // TODO: Register tentative write HERE
-
-            // should be: database.get(uid) = newVal
-        }
-
-        public void Fail()
-        {
-            // TODO: make the server stop responding to external calls
-            Console.WriteLine("I'm out of service");
-            _state = WorkerState.FAILED;
-        }
-
-        public void Freeze()
-        {
-            // TODO: make the server stop responding to external calls,
-            // but maintaining all calls for later reply
-            Console.WriteLine("I'm freezed");
-            _state = WorkerState.FREEZED;
-        }
-
-        public void Recover()
-        {
-            // TODO: make the server accept calls again
-            Console.WriteLine("I'm in service");
-            _state = WorkerState.ACTIVE;
+            if (!success)
+            {
+                IEndTransaction client = (IEndTransaction)Activator.GetObject(typeof(IEndTransaction), clientURL);
+                client.abort();
+            }
         }
     }
 }

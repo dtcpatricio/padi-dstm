@@ -3,37 +3,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CommonTypes;
+using CommonTypes.LibraryDatastore;
 
-namespace Padi_dstm
+namespace PADI_DSTM
 {
-    [Serializable]
+
     public class PadInt : IPadInt
     {
         private int _uid;
         private int _value;
-        private string url; // URL of worker server. Not sure if needed
+        private string _url; // URL of worker server.
 
-        // placeholder constructor for testing
-        public PadInt(int uid)
+
+        public PadInt(int uid, string url)
         {
             _uid = uid;
+            _url = url;
         }
 
-        public string URL { get { return url; } }
+        public string URL { get { return _url; } }
         public int UID { get { return _uid; } }
 
 
         public int Read()
         {
             _value = PadiDstm.Transaction.Read(this);
-            return _value; // placeholder
+            return _value;
         }
 
         public void Write(int val)
         {
             PadiDstm.Transaction.Write(this, val);
-            return; // placeholder
+            return;
         }
     }
 }

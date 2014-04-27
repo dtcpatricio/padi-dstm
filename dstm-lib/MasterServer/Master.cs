@@ -9,19 +9,27 @@ using System.Runtime.Remoting.Channels.Tcp;
 
 namespace MasterServer
 {
-    class MasterServerMain
+    public class MasterServerMain
     {
         static void Main(string[] args)
         {
+            // hard-typed port
             TcpChannel channel = new TcpChannel(8086);
             ChannelServices.RegisterChannel(channel, true);
 
             RemotingConfiguration.RegisterWellKnownServiceType(
-                typeof(WorkerRegister),
-                "WorkerRegister",
+                typeof(DatastoreComm),
+                "DatastoreComm",
                 WellKnownObjectMode.Singleton);
 
-            System.Console.WriteLine("Registered Master Server on tcp://localhost:8086/WorkerRegister");
+            System.Console.WriteLine("Registered Master Server DatastoreComm object on:\r\ntcp://localhost:8086/DatastoreComm");
+
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(LibraryComm),
+                "LibraryComm",
+                WellKnownObjectMode.Singleton);
+
+            System.Console.WriteLine("Registered Master Server LibraryComm object on:\r\ntcp://localhost:8086/LibraryComm");
 
             System.Console.WriteLine("Master Server running");
             System.Console.ReadLine();

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CommonTypes
+namespace CommonTypes.LibraryDatastore
 {
-    public interface IPadInt
+    public interface IEndTransaction
     {
-        int Read();
-        void Write(int val);
+        void abort();
+        void commit();
     }
 }
