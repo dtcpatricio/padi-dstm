@@ -10,5 +10,6 @@ namespace Datastore
     {
         void canCommit(int txID, string coordURL);
         void doCommit(int txID, string coordURL);
+        void doAbort(int txID, string coordURL);
     }
 }

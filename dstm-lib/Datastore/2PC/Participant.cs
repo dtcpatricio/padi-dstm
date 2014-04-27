@@ -19,5 +19,10 @@ namespace Datastore
             Datastore.DoCommit(txID, coordURL);
         }
 
+        public void doAbort(int txID, string coordURL)
+        {
+            Datastore.DoAbort(txID, coordURL);
+        }
+
     }
 }
