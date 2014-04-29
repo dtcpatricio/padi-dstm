@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Runtime.Remoting.Messaging;
 
 namespace Datastore
 {
@@ -68,6 +69,9 @@ namespace Datastore
             participantsTimer.Enabled = true;
         }
 
+        public delegate void RemoteAsyncDelegate(int txID, string url);
+
+
         // TODO: should run a separate thread to receive replies
         // only the coordinator should call this
         internal void prepare()
@@ -79,17 +83,50 @@ namespace Datastore
                 // for receiving votes (yes or no) - Assync callback (ver exemplo da aula 4) 
                 // and another one to run the timer
                 IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                if (participant.canCommit(_tx.TXID, Datastore.SERVERURL))
-                {
-                    // can commit
-                }
-                else
-                {
-                    // cannot commit
-                }
+                //participant.canCommit(_tx.TXID, Datastore.SERVERURL);
+
+                // Create delegate to remote method
+                RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(participant.canCommit);
+                // Call delegate to remote method
+                IAsyncResult RemAr = RemoteDel.BeginInvoke(_tx.TXID, Datastore.SERVERURL, null, null);
+                // Wait for the end of the call and then explictly call EndInvoke
+                //RemAr.AsyncWaitHandle.WaitOne();
+                //Console.WriteLine(RemoteDel.EndInvoke(RemAr));
             }
 
-            //timer();
+            timer();
+            _myDecision = waitParticipantsResponse();
+            evaluateMyDecision();
+        }
+
+        internal TransactionDecision waitParticipantsResponse()
+        {
+            while (true)
+            {
+                int noResponses = 0;
+                foreach (String url in _participantURLs.Keys)
+                {
+                    if (_participantURLs[url].Equals(ParticipantResponse.NORESPONSE))
+                        noResponses++;
+
+                    if (_participantURLs[url].Equals(ParticipantResponse.NO))
+                        return TransactionDecision.ABORT;
+
+                    if (noResponses <= 0)
+                        return TransactionDecision.COMMIT;
+                }
+            }
+        }
+
+        internal void evaluateMyDecision()
+        {
+            if(_myDecision.Equals(TransactionDecision.COMMIT))
+                commit();
+            
+            if(_myDecision.Equals(TransactionDecision.ABORT))
+                abort();
+
+            // Should return transaction exception
         }
 
         internal void commit()

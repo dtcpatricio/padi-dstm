@@ -9,9 +9,9 @@ namespace Datastore
 {
     class Participant : MarshalByRefObject, IParticipant
     {
-        public bool canCommit(int txID, string coordURL)
+        public void canCommit(int txID, string coordURL)
         {
-            return Datastore.canCommit(txID, coordURL);
+            Datastore.canCommit(txID, coordURL);
         }
 
         public void doCommit(int txID, string coordURL)

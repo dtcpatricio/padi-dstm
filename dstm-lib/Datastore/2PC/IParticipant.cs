@@ -8,7 +8,7 @@ namespace Datastore
 {
     internal interface IParticipant
     {
-        bool canCommit(int txID, string coordURL);
+        void canCommit(int txID, string coordURL);
         void doCommit(int txID, string coordURL);
         void doAbort(int txID, string coordURL);
     }

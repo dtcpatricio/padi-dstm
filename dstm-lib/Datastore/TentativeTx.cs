@@ -22,6 +22,12 @@ namespace Datastore
         // depending of the Datastore
         private CoordinatorManager _cm;
         private ParticipantManager _pm;
+
+        internal List<ServerObject> WRITTENOBJECTS
+        {
+            get { return writtenObjects; }
+        }
+
         internal CoordinatorManager COORDINATOR
         {
             get { return _cm; }
