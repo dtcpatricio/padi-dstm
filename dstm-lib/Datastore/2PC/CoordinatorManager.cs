@@ -67,7 +67,7 @@ namespace Datastore
         // only the coordinator should call this
         internal void prepare()
         {
-            if (_participantURLs.Count >= 0)
+            if (_participantURLs.Count > 0)
             {
                 foreach (String url in _participantURLs.Keys)
                 {
@@ -95,6 +95,7 @@ namespace Datastore
                 // Coordinator decision
                 // Default commit
                 MY_DECISION = TransactionDecision.COMMIT;
+                Console.WriteLine("AFTER MY_DECISION is commit and there are no participants");
             }
             // First phase of commit, temporary write to disk
             writeAheadLog();

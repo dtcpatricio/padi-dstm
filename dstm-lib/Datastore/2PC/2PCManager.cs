@@ -66,14 +66,14 @@ namespace Datastore
 
         internal void writeAheadLog()
         {
-            String log = "TEMP\n";
+            String log = "TEMP\r\n";
 
             foreach (ServerObject so in TX.WRITTENOBJECTS)
             {
                 log += so.UID + " " + so.VALUE + " ";
             }
 
-            System.IO.StreamWriter file = new System.IO.StreamWriter(LOG_PATH + "WALparticipant.txt");
+            System.IO.StreamWriter file = new System.IO.StreamWriter(LOG_PATH + "\\WALparticipant.txt");
             file.WriteLine(log);
 
             file.Close();
@@ -81,13 +81,13 @@ namespace Datastore
 
         internal void writePermanentLog()
         {
-            string text = System.IO.File.ReadAllText(LOG_PATH + "WALparticipant.txt");
-            if (text.Contains("TEMP\n"))
+            string text = System.IO.File.ReadAllText(LOG_PATH + "\\WALparticipant.txt");
+            if (text.Contains("TEMP\r\n"))
             {
-                text.Replace("TEMP\n", "");
+                text.Replace("TEMP\r\n", "");
             }
 
-            System.IO.StreamWriter file = new System.IO.StreamWriter(LOG_PATH + "WALparticipant.txt");
+            System.IO.StreamWriter file = new System.IO.StreamWriter(LOG_PATH + "\\WALparticipant.txt");
             file.WriteLine(text);
             file.Close();
         }

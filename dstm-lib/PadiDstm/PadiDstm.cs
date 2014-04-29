@@ -109,6 +109,7 @@ namespace PADI_DSTM
             }
         }
 
+        // returning -1 when 2 datastores are alive
         private static int computeDatastore(int uid)
         {
             // compute the digest of the uid

@@ -11,7 +11,6 @@ class SampleApp {
         PadInt pi_a = PadiDstm.CreatePadInt(0);
         PadInt pi_b = PadiDstm.CreatePadInt(1);
         res = PadiDstm.TxCommit();
-        Console.WriteLine("SampleApp: After TxCommit()");
 
         res = PadiDstm.TxBegin();
         pi_a = PadiDstm.AccessPadInt(0);
@@ -25,7 +24,7 @@ class SampleApp {
         res = PadiDstm.Freeze("tcp://localhost:2001/Server");
         res = PadiDstm.Recover("tcp://localhost:2001/Server");
         res = PadiDstm.Fail("tcp://localhost:2002/Server");
-        Console.WriteLine("SampleApp: After Fail");
         res = PadiDstm.TxCommit();
+        Console.ReadLine();
     }
 }
