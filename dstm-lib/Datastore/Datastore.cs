@@ -142,7 +142,7 @@ namespace Datastore
         internal static bool Commit(int txID, List<String> URLs)
         {
             TentativeTx tx = _tentativeTransactions[txID];
-            tx.COORDINATOR = new CoordinatorManager(URLs);
+            tx.COORDINATOR = new CoordinatorManager(tx, URLs);
             tx.COORDINATOR.prepare();
             tx.COORDINATOR.commit();
             return true;
@@ -181,7 +181,7 @@ namespace Datastore
         internal static void canCommit(int txID, string coordURL)
         {
             TentativeTx tx = _tentativeTransactions[txID];
-            tx.PARTICIPANT = new ParticipantManager();
+            tx.PARTICIPANT = new ParticipantManager(tx);
             tx.PARTICIPANT.COORDINATORURL = coordURL;
             tx.PARTICIPANT.canCommit();
         }

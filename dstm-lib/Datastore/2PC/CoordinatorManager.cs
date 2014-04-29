@@ -10,33 +10,23 @@ using System.IO;
 namespace Datastore
 {
     // Replacing TransactionManager - coordinator part
-    internal class CoordinatorManager
+    internal class CoordinatorManager : _2PCManager
     {
-        // not sure if necessary
-        private static TentativeTx _tx;
-        
-        private TransactionDecision _myDecision;
-
-        // participants URL's
-       //private static List<String> _URLs;
-        
         private static Dictionary<String, ParticipantResponse> _participantURLs;
-        
-        private System.Timers.Timer participantsTimer;
 
-        private String logPath;
-
-        internal CoordinatorManager(List<String> URLs)
+        internal CoordinatorManager(TentativeTx tx, List<String> URLs)
         {
-            _myDecision = TransactionDecision.DEFAULT;
+            TX = tx;
+            MY_DECISION = TransactionDecision.DEFAULT;
             initializeParticipants(URLs);
-            logPath = @"C:\" + _tx.TXID;
+            LOG_PATH = "C:\\" + TX.TXID;
+            createLogDirectory();
         }
 
         internal void initializeParticipants(List<String> URLs)
         {
             _participantURLs = new Dictionary<String, ParticipantResponse>();
-            foreach (String url in URLs)
+            foreach (String url in URLs ?? new List<String>())
             {
                 _participantURLs.Add(url, ParticipantResponse.NORESPONSE);
             }
@@ -45,9 +35,6 @@ namespace Datastore
         // TODO: Necessary because a server can be a coordinator as well as a participant
         ~CoordinatorManager()
         {
-            _tx = null;
-            _myDecision = TransactionDecision.DEFAULT;
-            _participantURLs = null;
         }
 
         internal static void onTimeAbort(object source, ElapsedEventArgs e)
@@ -56,21 +43,21 @@ namespace Datastore
             {
                 // TODO: A thread per participant
                 IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                participant.doAbort(_tx.TXID, Datastore.SERVERURL);
+                participant.doAbort(TX.TXID, Datastore.SERVERURL);
             }
         }
 
         internal void timer()
         {
             // Create a timer with a ten second interval.
-            participantsTimer = new System.Timers.Timer(5000);
+            TIMER = new System.Timers.Timer(5000);
 
             // Hook up the event handler for the Elapsed event.
-            participantsTimer.Elapsed += new ElapsedEventHandler(onTimeAbort);
+            TIMER.Elapsed += new ElapsedEventHandler(onTimeAbort);
 
             // Only raise the event the first time Interval elapses.
-            participantsTimer.AutoReset = false;
-            participantsTimer.Enabled = true;
+            TIMER.AutoReset = false;
+            TIMER.Enabled = true;
         }
 
         public delegate void RemoteAsyncDelegate(int txID, string url);
@@ -80,31 +67,39 @@ namespace Datastore
         // only the coordinator should call this
         internal void prepare()
         {
-            foreach (String url in _participantURLs.Keys)
+            if (_participantURLs.Count >= 0)
             {
-                // TODO: A thread per participant
-                // after all thread are sent, create one main thread responsible
-                // for receiving votes (yes or no) - Assync callback (ver exemplo da aula 4) 
-                // and another one to run the timer
-                IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                //participant.canCommit(_tx.TXID, Datastore.SERVERURL);
+                foreach (String url in _participantURLs.Keys)
+                {
+                    // TODO: A thread per participant
+                    // after all thread are sent, create one main thread responsible
+                    // for receiving votes (yes or no) - Assync callback (ver exemplo da aula 4) 
+                    // and another one to run the timer
+                    IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
+                    //participant.canCommit(_tx.TXID, Datastore.SERVERURL);
 
-                // Create delegate to remote method
-                RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(participant.canCommit);
-                // Call delegate to remote method
-                IAsyncResult RemAr = RemoteDel.BeginInvoke(_tx.TXID, Datastore.SERVERURL, null, null);
-                // Wait for the end of the call and then explictly call EndInvoke
-                //RemAr.AsyncWaitHandle.WaitOne();
-                //Console.WriteLine(RemoteDel.EndInvoke(RemAr));
+                    // Create delegate to remote method
+                    RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(participant.canCommit);
+                    // Call delegate to remote method
+                    IAsyncResult RemAr = RemoteDel.BeginInvoke(TX.TXID, Datastore.SERVERURL, null, null);
+                    // Wait for the end of the call and then explictly call EndInvoke
+                    //RemAr.AsyncWaitHandle.WaitOne();
+                    //Console.WriteLine(RemoteDel.EndInvoke(RemAr));
+                }
+                timer();
+                MY_DECISION = waitParticipantsResponse();
+                evaluateMyDecision();
+            }
+            else
+            {
+                // Coordinator decision
+                // Default commit
+                MY_DECISION = TransactionDecision.COMMIT;
             }
             // First phase of commit, temporary write to disk
             writeAheadLog();
 
-            timer();
-            _myDecision = waitParticipantsResponse();
-            evaluateMyDecision();
-
-            if (_myDecision.Equals(TransactionDecision.COMMIT))
+            if (MY_DECISION.Equals(TransactionDecision.COMMIT))
                 writePermanentLog();
         }
 
@@ -129,10 +124,10 @@ namespace Datastore
 
         internal void evaluateMyDecision()
         {
-            if(_myDecision.Equals(TransactionDecision.COMMIT))
+            if(MY_DECISION.Equals(TransactionDecision.COMMIT))
                 commit();
             
-            if(_myDecision.Equals(TransactionDecision.ABORT))
+            if(MY_DECISION.Equals(TransactionDecision.ABORT))
                 abort();
 
             // Should return transaction exception
@@ -145,7 +140,7 @@ namespace Datastore
             {
                 // TODO: A thread per participant
                 IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                participant.doCommit(_tx.TXID, Datastore.SERVERURL);
+                participant.doCommit(TX.TXID, Datastore.SERVERURL);
             }
         }
 
@@ -156,7 +151,7 @@ namespace Datastore
             {
                 // TODO: A thread per participant
                 IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                participant.doAbort(_tx.TXID, Datastore.SERVERURL);
+                participant.doAbort(TX.TXID, Datastore.SERVERURL);
             }
         }
 
@@ -176,51 +171,5 @@ namespace Datastore
             // TODO: confirm if transaction has committed or not
             return true;
         }
-
-        // TODO: Add same code to participants and create a new class that deals with this
-        internal void writeAheadLog()
-        {
-            String log = "TEMP\n";
-
-            try
-            {
-                if (Directory.Exists(logPath))
-                {
-                    Console.WriteLine("That path already exists.");
-                    return;
-                }
-
-                DirectoryInfo di = Directory.CreateDirectory(logPath);
-                Console.WriteLine("The directory was created successfully at {0}.", logPath);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("The process failed: {0]", e.ToString());
-            }
-
-            foreach (ServerObject so in _tx.WRITTENOBJECTS)
-            {
-                log += so.UID + " " + so.VALUE + " ";
-            }
-
-            System.IO.StreamWriter file = new System.IO.StreamWriter("C:\\WALparticipant.txt");
-            file.WriteLine(log);
-
-            file.Close();
-        }
-
-        internal void writePermanentLog()
-        {
-            string text = System.IO.File.ReadAllText(@"C:\\WALparticipant.txt");
-            if (text.Contains("TEMP\n"))
-            {
-                text.Replace("TEMP\n", "");
-            }
-
-            System.IO.StreamWriter file = new System.IO.StreamWriter("C:\\WALparticipant.txt");
-            file.WriteLine(text);
-            file.Close();
-        }
-
     }
 }

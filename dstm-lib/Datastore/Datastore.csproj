@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="2PC\2PCManager.cs" />
     <Compile Include="2PC\Coordinator.cs" />
     <Compile Include="2PC\CoordinatorManager.cs" />
     <Compile Include="2PC\TransactionDecision.cs" />
