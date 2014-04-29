@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Runtime.Remoting.Messaging;
+using System.IO;
 
 namespace Datastore
 {
@@ -23,10 +24,13 @@ namespace Datastore
         
         private System.Timers.Timer participantsTimer;
 
+        private String logPath;
+
         internal CoordinatorManager(List<String> URLs)
         {
             _myDecision = TransactionDecision.DEFAULT;
             initializeParticipants(URLs);
+            logPath = @"C:\" + _tx.TXID;
         }
 
         internal void initializeParticipants(List<String> URLs)
@@ -39,7 +43,7 @@ namespace Datastore
         }
 
         // TODO: Necessary because a server can be a coordinator as well as a participant
-        internal ~CoordinatorManager()
+        ~CoordinatorManager()
         {
             _tx = null;
             _myDecision = TransactionDecision.DEFAULT;
@@ -93,10 +97,15 @@ namespace Datastore
                 //RemAr.AsyncWaitHandle.WaitOne();
                 //Console.WriteLine(RemoteDel.EndInvoke(RemAr));
             }
+            // First phase of commit, temporary write to disk
+            writeAheadLog();
 
             timer();
             _myDecision = waitParticipantsResponse();
             evaluateMyDecision();
+
+            if (_myDecision.Equals(TransactionDecision.COMMIT))
+                writePermanentLog();
         }
 
         internal TransactionDecision waitParticipantsResponse()
@@ -167,5 +176,51 @@ namespace Datastore
             // TODO: confirm if transaction has committed or not
             return true;
         }
+
+        // TODO: Add same code to participants and create a new class that deals with this
+        internal void writeAheadLog()
+        {
+            String log = "TEMP\n";
+
+            try
+            {
+                if (Directory.Exists(logPath))
+                {
+                    Console.WriteLine("That path already exists.");
+                    return;
+                }
+
+                DirectoryInfo di = Directory.CreateDirectory(logPath);
+                Console.WriteLine("The directory was created successfully at {0}.", logPath);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("The process failed: {0]", e.ToString());
+            }
+
+            foreach (ServerObject so in _tx.WRITTENOBJECTS)
+            {
+                log += so.UID + " " + so.VALUE + " ";
+            }
+
+            System.IO.StreamWriter file = new System.IO.StreamWriter("C:\\WALparticipant.txt");
+            file.WriteLine(log);
+
+            file.Close();
+        }
+
+        internal void writePermanentLog()
+        {
+            string text = System.IO.File.ReadAllText(@"C:\\WALparticipant.txt");
+            if (text.Contains("TEMP\n"))
+            {
+                text.Replace("TEMP\n", "");
+            }
+
+            System.IO.StreamWriter file = new System.IO.StreamWriter("C:\\WALparticipant.txt");
+            file.WriteLine(text);
+            file.Close();
+        }
+
     }
 }

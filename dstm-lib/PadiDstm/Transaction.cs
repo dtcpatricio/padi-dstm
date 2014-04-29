@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
-using CommonTypes.LibraryMaster;
-using CommonTypes.LibraryDatastore;
+using CommonTypes;
 
 namespace PADI_DSTM
 {

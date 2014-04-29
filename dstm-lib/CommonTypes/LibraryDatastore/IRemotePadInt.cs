@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CommonTypes.LibraryDatastore
+namespace CommonTypes
 {
     public interface IRemotePadInt
     {

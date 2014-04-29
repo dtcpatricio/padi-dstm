@@ -57,10 +57,6 @@
       <Project>{0a5edf68-29cd-4ea9-a05f-dd0f0bf0d4a2}</Project>
       <Name>CommonTypes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Datastore\Datastore.csproj">
-      <Project>{6709b041-960e-4911-a252-5568a8a4b4a4}</Project>
-      <Name>Datastore</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

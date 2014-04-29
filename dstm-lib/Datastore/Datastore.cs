@@ -178,12 +178,12 @@ namespace Datastore
          * this method is called from coordinator to participants to commit their values
          * and reply to the coordinator with an answer of success
          **/
-        internal static bool canCommit(int txID, string coordURL)
+        internal static void canCommit(int txID, string coordURL)
         {
             TentativeTx tx = _tentativeTransactions[txID];
             tx.PARTICIPANT = new ParticipantManager();
             tx.PARTICIPANT.COORDINATORURL = coordURL;
-            return tx.PARTICIPANT.canCommit();
+            tx.PARTICIPANT.canCommit();
         }
 
         internal static void doCommit(int txID, string coordURL)

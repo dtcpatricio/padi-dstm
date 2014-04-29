@@ -37,7 +37,7 @@ namespace Datastore
         }
 
         // TODO: Necessary because a server can be a coordinator as well as a participant
-        internal ~ParticipantManager()
+        ~ParticipantManager()
         {
             _tx = null;
             _myDecision = TransactionDecision.DEFAULT;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
-using CommonTypes.LibraryDatastore;
+using CommonTypes;
 
 namespace PADI_DSTM
 {
@@ -59,6 +59,7 @@ namespace PADI_DSTM
                 typeof(IDatastoreOps),
                 coordURL + "DatastoreOps");
 
+                Console.WriteLine("PadiDstm: Before commit in Datastore");
                 datastore.commit(Transaction.TXID, participants);
                 // TODO: there may be something missing still here
 
