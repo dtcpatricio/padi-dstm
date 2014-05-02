@@ -2,7 +2,7 @@
 using PADI_DSTM;
 
 class CrossedLocks
-{
+{/*
     static void Main(string[] args)
     {
         bool res;
@@ -80,5 +80,5 @@ class CrossedLocks
         Console.WriteLine("commit = " + res + " . Press enter for exit.");
         Console.WriteLine("####################################################################");
         Console.ReadLine();
-    }
+    }*/
 }

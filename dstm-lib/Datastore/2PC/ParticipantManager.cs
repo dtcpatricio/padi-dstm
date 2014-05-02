@@ -16,6 +16,9 @@ namespace Datastore
 
         private static String _coordinatorURL;
 
+        // identifier test purposes
+        string t;
+
         internal String COORDINATORURL
         {
             get { return _coordinatorURL; }
@@ -30,10 +33,10 @@ namespace Datastore
 
         internal ParticipantManager(TentativeTx tx)
         {
+            MY_URL = Datastore.SERVERURL + "Participant";
             TX = tx;
             MY_DECISION = TransactionDecision.DEFAULT;
             COORDINATOR_DECISION = TransactionDecision.DEFAULT;
-            LOG_PATH = "C:\\" + TX.TXID;
             createLogDirectory();
         }
 
@@ -45,7 +48,7 @@ namespace Datastore
         internal void timer()
         {
             // Create a timer with a ten second interval.
-            TIMER = new System.Timers.Timer(5000);
+            TIMER = new System.Timers.Timer(10000);
 
             // Hook up the event handler for the Elapsed event.
             TIMER.Elapsed += new ElapsedEventHandler(getDecision);
@@ -57,6 +60,8 @@ namespace Datastore
 
         internal void canCommit()
         {
+            Console.WriteLine("I'm the participant: " + MY_URL);
+            Console.WriteLine("Coordinator URL: " + _coordinatorURL);
             ICoordinator coord = (ICoordinator)Activator.GetObject(typeof(ICoordinator), _coordinatorURL);
             // TODO: test if transaction can commit
             
@@ -64,8 +69,8 @@ namespace Datastore
 
             writeAheadLog();
 
-            timer();
-            coord.sendYes(TX.TXID, Datastore.SERVERURL);
+            //timer();
+            coord.sendYes(TX.TXID, MY_URL);
 
             MY_DECISION = waitForCoordinator();
         }
@@ -100,9 +105,9 @@ namespace Datastore
             
             // delete tentative tx, é necessário apagar a lista de written objects?
 
-            if (File.Exists(@LOG_PATH + "WALparticipant.txt"))
+            if (File.Exists(@LOG_PATH + "WALparticipantPART.txt"))
             {
-                File.Delete(@LOG_PATH + "WALparticipant.txt");
+                File.Delete(@LOG_PATH + "WALparticipantPART.txt");
             }
             endTimer();
         }
@@ -115,7 +120,7 @@ namespace Datastore
             //It is assumed that if the coordinator fails to respond, the transaction is 
             //Alternative strategies are available for the participants to obtain a decision 
             // cooperatively instead of contacting the coordinato
-            coord.haveCommitted(TX.TXID, Datastore.SERVERURL);
+            coord.haveCommitted(TX.TXID, MY_URL);
             // save decision
         }
     }

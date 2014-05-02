@@ -141,6 +141,7 @@ namespace Datastore
         // URLs is the list of participants of transaction txID
         internal static bool Commit(int txID, List<String> URLs)
         {
+            Console.WriteLine("Commit do Datastore");
             TentativeTx tx = _tentativeTransactions[txID];
             tx.COORDINATOR = new CoordinatorManager(tx, URLs);
             tx.COORDINATOR.prepare();

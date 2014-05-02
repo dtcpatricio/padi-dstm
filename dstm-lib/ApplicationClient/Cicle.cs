@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using PADI_DSTM;
 
 namespace ConsoleApplication2
-{
+{/*
     class Program
     {
         static void Main(string[] args)
@@ -37,5 +37,5 @@ namespace ConsoleApplication2
             res = PadiDstm.Fail("tcp://localhost:2002/Server");
             res = PadiDstm.TxCommit();
         }
-    }
+    }*/
 }

@@ -76,6 +76,7 @@ namespace PADI_DSTM
             return true; // placeholder
         }
 
+
         /**
          * CreatePadInt
          * @param uid is a global unique identifier for the object in the system
@@ -115,11 +116,14 @@ namespace PADI_DSTM
             // compute the digest of the uid
             byte[] uidBytes = BitConverter.GetBytes(uid);
             MD5 md5 = new MD5CryptoServiceProvider();
+            
             byte[] digest = md5.ComputeHash(uidBytes);
-
+            //string hash = getMd5Hash(digest);
             // get the first 4 bytes of the full 16 bytes of the hash
             // and have it moduled with the number of servers
-            int serverNumber = BitConverter.ToInt32(digest, 0) % Servers.AvailableServers.Count;
+            int test = BitConverter.ToInt32(digest, 0);
+            int serverNumber = Math.Abs(test) % Servers.AvailableServers.Count;
+            int test2 = Math.Abs(test);
             return serverNumber;
         }
 

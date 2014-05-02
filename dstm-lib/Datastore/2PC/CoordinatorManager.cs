@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Timers;
 using System.Runtime.Remoting.Messaging;
 using System.IO;
@@ -14,12 +15,16 @@ namespace Datastore
     {
         private static Dictionary<String, ParticipantResponse> _participantURLs;
 
+        private int _number_responses = 0;
+
+        private static bool _allResponses = false;
+
         internal CoordinatorManager(TentativeTx tx, List<String> URLs)
         {
+            MY_URL = Datastore.SERVERURL + "Coordinator";
             TX = tx;
             MY_DECISION = TransactionDecision.DEFAULT;
             initializeParticipants(URLs);
-            LOG_PATH = "C:\\" + TX.TXID;
             createLogDirectory();
         }
 
@@ -28,7 +33,7 @@ namespace Datastore
             _participantURLs = new Dictionary<String, ParticipantResponse>();
             foreach (String url in URLs ?? new List<String>())
             {
-                _participantURLs.Add(url, ParticipantResponse.NORESPONSE);
+                _participantURLs.Add(url + "Participant", ParticipantResponse.NORESPONSE);
             }
         }
 
@@ -43,14 +48,14 @@ namespace Datastore
             {
                 // TODO: A thread per participant
                 IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                participant.doAbort(TX.TXID, Datastore.SERVERURL);
+                participant.doAbort(TX.TXID, MY_URL);
             }
         }
 
         internal void timer()
         {
             // Create a timer with a ten second interval.
-            TIMER = new System.Timers.Timer(5000);
+            TIMER = new System.Timers.Timer(10000);
 
             // Hook up the event handler for the Elapsed event.
             TIMER.Elapsed += new ElapsedEventHandler(onTimeAbort);
@@ -67,6 +72,7 @@ namespace Datastore
         // only the coordinator should call this
         internal void prepare()
         {
+            Console.WriteLine("I'm the coordinator: " + MY_URL);
             if (_participantURLs.Count > 0)
             {
                 foreach (String url in _participantURLs.Keys)
@@ -75,18 +81,19 @@ namespace Datastore
                     // after all thread are sent, create one main thread responsible
                     // for receiving votes (yes or no) - Assync callback (ver exemplo da aula 4) 
                     // and another one to run the timer
+                    Console.WriteLine("URL: " + url);
                     IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                    //participant.canCommit(_tx.TXID, Datastore.SERVERURL);
+                    //participant.canCommit(TX.TXID, MY_URL);
 
                     // Create delegate to remote method
                     RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(participant.canCommit);
                     // Call delegate to remote method
-                    IAsyncResult RemAr = RemoteDel.BeginInvoke(TX.TXID, Datastore.SERVERURL, null, null);
+                    IAsyncResult RemAr = RemoteDel.BeginInvoke(TX.TXID, MY_URL, null, null);
                     // Wait for the end of the call and then explictly call EndInvoke
                     //RemAr.AsyncWaitHandle.WaitOne();
                     //Console.WriteLine(RemoteDel.EndInvoke(RemAr));
                 }
-                timer();
+                //timer();
                 MY_DECISION = waitParticipantsResponse();
                 evaluateMyDecision();
             }
@@ -106,9 +113,12 @@ namespace Datastore
 
         internal TransactionDecision waitParticipantsResponse()
         {
-            while (true)
+            int noResponses = 0;
+            lock (this)
             {
-                int noResponses = 0;
+                if(!_allResponses)
+                    Monitor.Wait(this);
+                
                 foreach (String url in _participantURLs.Keys)
                 {
                     if (_participantURLs[url].Equals(ParticipantResponse.NORESPONSE))
@@ -119,6 +129,20 @@ namespace Datastore
 
                     if (noResponses <= 0)
                         return TransactionDecision.COMMIT;
+                }
+            }
+            return TransactionDecision.DEFAULT;
+        }
+
+        internal void receivedAllResponses()
+        {
+            lock (this)
+            {
+                _number_responses++;
+                if (_number_responses == _participantURLs.Count)
+                {
+                    _allResponses = true;
+                    Monitor.PulseAll(this);
                 }
             }
         }
@@ -141,7 +165,10 @@ namespace Datastore
             {
                 // TODO: A thread per participant
                 IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                participant.doCommit(TX.TXID, Datastore.SERVERURL);
+                //participant.doCommit(TX.TXID, MY_URL);
+                RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(participant.doCommit);
+                // Call delegate to remote method
+                IAsyncResult RemAr = RemoteDel.BeginInvoke(TX.TXID, MY_URL, null, null);
             }
         }
 
@@ -152,18 +179,20 @@ namespace Datastore
             {
                 // TODO: A thread per participant
                 IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                participant.doAbort(TX.TXID, Datastore.SERVERURL);
+                participant.doAbort(TX.TXID, MY_URL);
             }
         }
 
         internal void participantYes(String url)
         {
             _participantURLs[url] = ParticipantResponse.YES;
+            receivedAllResponses();
         }
 
         internal void participantNo(String url)
         {
             _participantURLs[url] = ParticipantResponse.NO;
+            receivedAllResponses();
             // TODO: send abort to all participants, and abort transaction
         }
 

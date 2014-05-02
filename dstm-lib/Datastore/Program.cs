@@ -39,6 +39,20 @@ namespace Datastore
                 WellKnownObjectMode.Singleton);
             System.Console.WriteLine("Registered DatastoreOps on tcp://localhost:" + port + "/DatastoreOps");
 
+            // TODO: Not sure if creation of 2 services corresponding to participant and coordinator, or 
+            // integration with already specified services (RemotePadInt or DatastoreOps)
+            // Participant or coordinator
+            RemotingConfiguration.RegisterWellKnownServiceType(
+               typeof(Participant),
+               "Participant",
+               WellKnownObjectMode.Singleton);
+            System.Console.WriteLine("Registered Coordinator on tcp://localhost:" + port + "/Participant");
+
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(Coordinator),
+                "Coordinator",
+                WellKnownObjectMode.Singleton);
+            System.Console.WriteLine("Registered Coordinator on tcp://localhost:" + port + "/Coordinator");
 
             // register the datastore server on the master server
             IDatastoreComm master = (IDatastoreComm)Activator.GetObject(
