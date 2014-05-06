@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using System.Runtime.Remoting.Channels.Tcp;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting;
 using CommonTypes;
 
 namespace PADI_DSTM
@@ -16,6 +19,7 @@ namespace PADI_DSTM
         private static string _port;
         private static string _master_url;
         private static string _client_url;
+        private static TcpChannel channel;
 
         internal static Transaction Transaction { get { return _transaction; } }
         internal static ServersCache Servers { get { return _servers; } }
@@ -33,13 +37,24 @@ namespace PADI_DSTM
             _master_url = "tcp://localhost:8086/";
             _client_url = "tcp://localhost:" + _port + "/";
 
+            // open a tcp channel to register the TransactionValues object
+            // the port definition strategy needs to be taken into account
+            channel = new TcpChannel(Convert.ToInt32(PadiDstm.Port));
+            ChannelServices.RegisterChannel(channel, true);
+
+            // register the EndTransaction object
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(EndTransaction),
+                "EndTransaction",
+                WellKnownObjectMode.SingleCall);
+
             _servers = new ServersCache();
             return true;
         }
 
         public static bool TxBegin()
         {
-            _transaction = new Transaction();
+            _transaction = new Transaction(channel);
 
             // update the cache of data servers
             Servers.updateCache();
@@ -51,8 +66,6 @@ namespace PADI_DSTM
         // Only if the transaction is committed we close the channel
         public static bool TxCommit()
         {
-
-            Transaction.closeChannel();
             if (Transaction.ACCESSEDSERVERS.Count > 0)
             {
                 bool success = false;

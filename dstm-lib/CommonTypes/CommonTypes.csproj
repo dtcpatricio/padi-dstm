@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DatastoreMaster\IDatastoreComm.cs" />
+    <Compile Include="DatastoreMaster\IReplicationComm.cs" />
     <Compile Include="LibraryDatastore\IDatastoreOps.cs" />
     <Compile Include="LibraryDatastore\IPadInt.cs" />
     <Compile Include="IRemoteOperations.cs" />

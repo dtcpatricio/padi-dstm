@@ -26,5 +26,10 @@ namespace Datastore
             bool success = Datastore.Commit(txID, participants);
             return success;
         }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
     }
 }

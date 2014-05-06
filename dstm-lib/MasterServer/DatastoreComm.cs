@@ -14,5 +14,10 @@ namespace MasterServer
             bool success = WorkerManager.addServer(url);
             return success;
         }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
     }
 }

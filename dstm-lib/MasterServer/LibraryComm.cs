@@ -20,5 +20,10 @@ namespace MasterServer
             IDictionary<int, string> servers = WorkerManager.getAvailableServers();
             return servers;
         }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
     }
 }

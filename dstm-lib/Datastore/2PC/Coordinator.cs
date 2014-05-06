@@ -22,5 +22,10 @@ namespace Datastore
         {
             Datastore.haveCommitted(txID, url);
         }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
     }
 }

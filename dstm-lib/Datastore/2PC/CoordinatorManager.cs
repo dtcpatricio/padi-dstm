@@ -21,6 +21,7 @@ namespace Datastore
 
         internal CoordinatorManager(TentativeTx tx, List<String> URLs)
         {
+            TIMER = null;
             MY_URL = Datastore.SERVERURL + "Coordinator";
             TX = tx;
             MY_DECISION = TransactionDecision.DEFAULT;
@@ -54,10 +55,10 @@ namespace Datastore
             }
         }
 
-        internal void timer()
+        internal void timer(int duration)
         {
             // Create a timer with a ten second interval.
-            TIMER = new System.Timers.Timer(10000);
+            TIMER = new System.Timers.Timer(duration);
 
             // Hook up the event handler for the Elapsed event.
             TIMER.Elapsed += new ElapsedEventHandler(onTimeAbort);
@@ -95,7 +96,7 @@ namespace Datastore
                     //RemAr.AsyncWaitHandle.WaitOne();
                     //Console.WriteLine(RemoteDel.EndInvoke(RemAr));
                 }
-                timer();
+                timer(10000);
                 MY_DECISION = waitParticipantsResponse();
                 evaluateMyDecision();
             }
@@ -111,6 +112,8 @@ namespace Datastore
 
             if (MY_DECISION.Equals(TransactionDecision.COMMIT))
                 writePermanentLog();
+        
+            
         }
 
         internal TransactionDecision waitParticipantsResponse()

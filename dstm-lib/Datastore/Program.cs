@@ -22,6 +22,7 @@ namespace Datastore
 
             // register the TCP channel
             TcpChannel channel = new TcpChannel(Convert.ToInt32(port));
+            
             ChannelServices.RegisterChannel(channel, true);
 
             // register runtime services:
@@ -29,14 +30,14 @@ namespace Datastore
             RemotingConfiguration.RegisterWellKnownServiceType(
                 typeof(RemotePadInt),
                 "RemotePadInt",
-                WellKnownObjectMode.Singleton);
+                WellKnownObjectMode.SingleCall);
             System.Console.WriteLine("Registered RemotePadInt on tcp://localhost:" + port + "/RemotePadInt");
 
             // - DatastoreOps
             RemotingConfiguration.RegisterWellKnownServiceType(
                 typeof(DatastoreOps),
                 "DatastoreOps",
-                WellKnownObjectMode.Singleton);
+                WellKnownObjectMode.SingleCall);
             System.Console.WriteLine("Registered DatastoreOps on tcp://localhost:" + port + "/DatastoreOps");
 
             // TODO: Not sure if creation of 2 services corresponding to participant and coordinator, or 
@@ -45,14 +46,14 @@ namespace Datastore
             RemotingConfiguration.RegisterWellKnownServiceType(
                typeof(Participant),
                "Participant",
-               WellKnownObjectMode.Singleton);
-            System.Console.WriteLine("Registered Coordinator on tcp://localhost:" + port + "/Participant");
+               WellKnownObjectMode.SingleCall);
+            System.Console.WriteLine("Registered Participant Interface on tcp://localhost:" + port + "/Participant");
 
             RemotingConfiguration.RegisterWellKnownServiceType(
                 typeof(Coordinator),
                 "Coordinator",
-                WellKnownObjectMode.Singleton);
-            System.Console.WriteLine("Registered Coordinator on tcp://localhost:" + port + "/Coordinator");
+                WellKnownObjectMode.SingleCall);
+            System.Console.WriteLine("Registered Coordinator Interface on tcp://localhost:" + port + "/Coordinator");
 
             // register the datastore server on the master server
             IDatastoreComm master = (IDatastoreComm)Activator.GetObject(

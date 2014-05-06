@@ -23,5 +23,10 @@ namespace Datastore
         {
             Datastore.doAbort(txID, coordURL);
         }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
     }
 }

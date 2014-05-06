@@ -16,9 +16,6 @@ namespace Datastore
 
         private String _coordinatorURL;
 
-        // identifier test purposes
-        string t;
-
         internal String COORDINATORURL
         {
             get { return _coordinatorURL; }

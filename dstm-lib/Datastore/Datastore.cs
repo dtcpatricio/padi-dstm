@@ -81,9 +81,9 @@ namespace Datastore
          **/
         internal static bool regTentativeWrite(int uid, int newVal, int txID, string clientURL)
         {
+            
             if (!_tentativeTransactions.ContainsKey(txID))
                 createTentativeTx(txID, clientURL);
-
 
             List<ServerObject> versions = getVersionsByUID(uid);
             int earlierReadTS = versions.Max(readts => readts.READTS);
@@ -142,25 +142,26 @@ namespace Datastore
             tx.COORDINATOR = new CoordinatorManager(tx, URLs);
             tx.COORDINATOR.prepare();
             if(tx.COORDINATOR.MY_DECISION.Equals(TransactionDecision.ABORT))
-                return false;
+                return false; 
+            
 
             return true;
         }
 
         internal static void participantVoteYes(int txID, String URL)
         {
-            /*
+           
             TentativeTx tx = _tentativeTransactions[txID];
             tx.COORDINATOR.participantYes(URL);
-             */
+           
         }
 
         internal static void participantVoteNo(int txID, String URL)
         {
-            /*
+            
             TentativeTx tx = _tentativeTransactions[txID];
             tx.COORDINATOR.participantNo(URL);
-             */
+             
         }
 
         internal static bool haveCommitted(int txID, String url)

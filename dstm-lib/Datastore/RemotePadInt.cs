@@ -30,5 +30,10 @@ namespace Datastore
                 client.abort();
             }
         }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
     }
 }

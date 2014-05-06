@@ -30,19 +30,9 @@ namespace PADI_DSTM
         // returns the list of the accessed servers throughout the transaction
         internal List<string> ACCESSEDSERVERS { get { return accessedServers; } }
 
-        internal Transaction()
+        internal Transaction(TcpChannel channel)
         {
-            // open a tcp channel to register the TransactionValues object
-            // the port definition strategy needs to be taken into account
-            channel = new TcpChannel(Convert.ToInt32(PadiDstm.Port));
-            ChannelServices.RegisterChannel(channel, true);
-
-            // register the EndTransaction object
-            RemotingConfiguration.RegisterWellKnownServiceType(
-                typeof(EndTransaction),
-                "EndTransaction",
-                WellKnownObjectMode.Singleton);
-
+            this.channel = channel;
             // aquire an unique transaction ID
             ILibraryComm master = (ILibraryComm)Activator.GetObject(
                 typeof(ILibraryComm),
@@ -81,7 +71,7 @@ namespace PADI_DSTM
 
         internal void Write(PadInt padInt, int val)
         {
-            string remotePadIntURL = padInt.URL + "RemotePadInt";
+           string remotePadIntURL = padInt.URL + "RemotePadInt";
             int uid = padInt.UID;
 
             IRemotePadInt remote = (IRemotePadInt)Activator.GetObject(
@@ -90,7 +80,7 @@ namespace PADI_DSTM
 
             remote.Write(uid, TXID, val, PadiDstm.Client_Url);
             AddValue(uid, val);
-
+            
             if (!accessedServers.Contains(padInt.URL))
                 accessedServers.Add(padInt.URL);
         }
@@ -102,13 +92,6 @@ namespace PADI_DSTM
                 values[uid] = value;
             else
                 values.Add(uid, value);
-        }
-
-        internal void closeChannel()
-        {
-            channel.StopListening(null);
-            ChannelServices.UnregisterChannel(channel);
-            channel = null;
         }
     }
 }
