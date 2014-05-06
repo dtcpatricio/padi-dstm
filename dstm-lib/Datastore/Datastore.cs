@@ -8,7 +8,6 @@ namespace Datastore
 {
     internal static class Datastore
     {
-
         // TODO: refactor to use generic list classes and HashSet
         // Map transaction id with its tentative reads/writes
         private static IDictionary<int, TentativeTx> _tentativeTransactions = new Dictionary<int, TentativeTx>();
@@ -59,11 +58,8 @@ namespace Datastore
                     return obj.VALUE;
                 }
             }
-
             return -1; // it should never reach this point. Possibly a TxException should be thrown
-
         }
-
 
         private static List<ServerObject> getVersionsByUID(int uid)
         {
@@ -116,6 +112,7 @@ namespace Datastore
             return _serverObjects.Any(x => x.UID == uid);
         }
 
+
         internal static bool createServerObject(int uid)
         {
             if(_serverObjects.Any((x => x.UID == uid && x.WRITETS == 0)))
@@ -125,7 +122,6 @@ namespace Datastore
             _serverObjects.Add(obj);
             return true;
         }
-
 
 
         /**********************************************************************
@@ -141,24 +137,30 @@ namespace Datastore
         // URLs is the list of participants of transaction txID
         internal static bool Commit(int txID, List<String> URLs)
         {
-            Console.WriteLine("Commit do Datastore");
+            Console.WriteLine("Datastore.Commit: Commit do Datastore");
             TentativeTx tx = _tentativeTransactions[txID];
             tx.COORDINATOR = new CoordinatorManager(tx, URLs);
             tx.COORDINATOR.prepare();
-            tx.COORDINATOR.commit();
+            if(tx.COORDINATOR.MY_DECISION.Equals(TransactionDecision.ABORT))
+                return false;
+
             return true;
         }
 
         internal static void participantVoteYes(int txID, String URL)
         {
+            /*
             TentativeTx tx = _tentativeTransactions[txID];
             tx.COORDINATOR.participantYes(URL);
+             */
         }
 
         internal static void participantVoteNo(int txID, String URL)
         {
+            /*
             TentativeTx tx = _tentativeTransactions[txID];
             tx.COORDINATOR.participantNo(URL);
+             */
         }
 
         internal static bool haveCommitted(int txID, String url)

@@ -1,17 +1,16 @@
 ﻿using System;
 using PADI_DSTM;
 
-class CrossedLocks
-{/*
-    static void Main(string[] args)
-    {
-        bool res;
+class CrossedLocks {
+ /*   static void Main(string[] args) {
+        bool res = false;
         PadInt pi_a, pi_b;
         PadiDstm.Init();
 
-        res = PadiDstm.TxBegin();
-        if ((args.Length > 0) && (args[0].Equals("C")))
-        {
+        args = new String[] {"C"};
+
+        if ((args.Length > 0) && (args[0].Equals("C"))) {
+            try{
             res = PadiDstm.TxBegin();
             pi_a = PadiDstm.CreatePadInt(1);
             pi_b = PadiDstm.CreatePadInt(2000000000);
@@ -25,10 +24,20 @@ class CrossedLocks
             Console.WriteLine("AFTER create commit. commit = " + res + " . Press enter for next transaction.");
             Console.WriteLine("####################################################################");
             Console.ReadLine();
+                        } catch (Exception e) {
+                Console.WriteLine("Exception: " + e.Message);
+                Console.WriteLine("####################################################################");
+                Console.WriteLine("AFTER create ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+                Console.WriteLine("####################################################################");
+                Console.ReadLine();
+                PadiDstm.TxAbort();
+            }
+
         }
 
-        if ((args.Length > 0) && ((args[0].Equals("A")) || (args[0].Equals("C"))))
-        {
+        try { 
+        res = PadiDstm.TxBegin();
+        if ((args.Length > 0) && ((args[0].Equals("A")) || (args[0].Equals("C")))) {
             pi_b = PadiDstm.AccessPadInt(2000000000);
             pi_b.Write(211);
             Console.WriteLine("####################################################################");
@@ -43,9 +52,7 @@ class CrossedLocks
             Console.WriteLine("####################################################################");
             PadiDstm.Status();
             Console.ReadLine();
-        }
-        else
-        {
+        } else {
             pi_a = PadiDstm.AccessPadInt(1);
             pi_a.Write(221);
             Console.WriteLine("####################################################################");
@@ -66,6 +73,16 @@ class CrossedLocks
         Console.WriteLine("commit = " + res + " . Press enter for verification transaction.");
         Console.WriteLine("####################################################################");
         Console.ReadLine();
+        } catch (Exception e) {
+            Console.WriteLine("Exception: " + e.Message);
+            Console.WriteLine("####################################################################");
+            Console.WriteLine("AFTER r/w ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+            Console.WriteLine("####################################################################");
+            Console.ReadLine();
+            PadiDstm.TxAbort();
+        }
+
+        try { 
         res = PadiDstm.TxBegin();
         PadInt pi_c = PadiDstm.AccessPadInt(1);
         PadInt pi_d = PadiDstm.AccessPadInt(2000000000);
@@ -80,5 +97,15 @@ class CrossedLocks
         Console.WriteLine("commit = " + res + " . Press enter for exit.");
         Console.WriteLine("####################################################################");
         Console.ReadLine();
-    }*/
+        } catch (Exception e) {
+            Console.WriteLine("Exception: " + e.Message);
+            Console.WriteLine("####################################################################");
+            Console.WriteLine("AFTER verification ABORT. Commit returned " + res + " . Press enter for abort and exit.");
+            Console.WriteLine("####################################################################");
+            Console.ReadLine();
+            PadiDstm.TxAbort();
+        }
+
+    }
+  */ 
 }

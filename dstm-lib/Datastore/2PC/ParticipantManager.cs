@@ -12,9 +12,9 @@ namespace Datastore
     // Replacing TransactionManager - participant part
     class ParticipantManager : _2PCManager
     {
-        private static TransactionDecision _myCoordinatorDecision;
+        private TransactionDecision _myCoordinatorDecision;
 
-        private static String _coordinatorURL;
+        private String _coordinatorURL;
 
         // identifier test purposes
         string t;
@@ -69,7 +69,7 @@ namespace Datastore
 
             writeAheadLog();
 
-            //timer();
+            timer();
             coord.sendYes(TX.TXID, MY_URL);
 
             MY_DECISION = waitForCoordinator();
@@ -101,18 +101,22 @@ namespace Datastore
         // Only for participants
         internal void doAbort(int txID, string coordURL)
         {
+            Console.WriteLine("ParticipantManager.doAbort initiated txID = " + txID);
             MY_DECISION = TransactionDecision.ABORT;
             
             // delete tentative tx, é necessário apagar a lista de written objects?
 
             if (File.Exists(@LOG_PATH + "WALparticipantPART.txt"))
             {
+                // TODO: Apagar apenas a linha que foi alterada
                 File.Delete(@LOG_PATH + "WALparticipantPART.txt");
             }
             endTimer();
+
+            Console.WriteLine("ParticipantManager.doAbort finished txID = " + txID);
         }
 
-        internal static void getDecision(object source, ElapsedEventArgs e)
+        internal void getDecision(object source, ElapsedEventArgs e)
         {
             // Hipotese: Se timer expirar, perguntar ao coordenador decisao final
             ICoordinator coord = (ICoordinator)Activator.GetObject(typeof(ICoordinator), _coordinatorURL);

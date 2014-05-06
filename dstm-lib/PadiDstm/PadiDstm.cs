@@ -29,6 +29,7 @@ namespace PADI_DSTM
         {
             System.Console.Write("Type in a port to use for EndTransaction object: ");
             _port = System.Console.ReadLine();
+           // _port = "8090";
             _master_url = "tcp://localhost:8086/";
             _client_url = "tcp://localhost:" + _port + "/";
 
@@ -46,11 +47,16 @@ namespace PADI_DSTM
             return true; // placeholder
         }
 
+        // Move Transaction.closeChannel to inside if (crossedLocks) 
+        // Only if the transaction is committed we close the channel
         public static bool TxCommit()
         {
+
             Transaction.closeChannel();
             if (Transaction.ACCESSEDSERVERS.Count > 0)
             {
+                bool success = false;
+
                 List<string> participants = Transaction.ACCESSEDSERVERS;
                 string coordURL = participants.ElementAt(0);
                 participants.RemoveAt(0);
@@ -59,12 +65,13 @@ namespace PADI_DSTM
                 typeof(IDatastoreOps),
                 coordURL + "DatastoreOps");
 
-                Console.WriteLine("PadiDstm: Before commit in Datastore");
-                datastore.commit(Transaction.TXID, participants);
+                Console.WriteLine("PadiDstm.TxCommit: Before commit in Datastore");
+                success = datastore.commit(Transaction.TXID, participants);
+                Console.WriteLine("PadiDstm.TxCommit: After commit in Datastore");
                 // TODO: there may be something missing still here
 
                 _transaction = null;
-                return true;
+                return success;
             }
 
             _transaction = null;
@@ -155,7 +162,8 @@ namespace PADI_DSTM
             }
             else
             {
-                //Maybe throwexception unable to create padint, uid already exists
+                // Maybe throwexception unable to create padint, uid already exists
+                // Enunciado: Returns null if the object does not exist already.
                 return null;
             }
         }

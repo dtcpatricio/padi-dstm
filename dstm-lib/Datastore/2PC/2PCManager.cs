@@ -10,13 +10,13 @@ namespace Datastore
     // Class responsible for maintenance of participants and coordinators
     abstract class _2PCManager
     {
-        private static TentativeTx _tx;
+        private TentativeTx _tx;
 
-        private static TransactionDecision _myDecision;
+        private TransactionDecision _myDecision;
 
-        private static string _myURL;
+        private string _myURL;
 
-        private static string _myPort;
+        private string _myPort;
 
         private String _logPath;
 
@@ -27,7 +27,7 @@ namespace Datastore
         //  - for coordinator: waiting for all participant responses
         private System.Timers.Timer _timer;
 
-        public static TentativeTx TX
+        public TentativeTx TX
         {
             get { return _tx; }
             set { _tx = value; }
@@ -39,13 +39,13 @@ namespace Datastore
             set { _myDecision = value; }
         }
 
-        public static String MY_URL
+        public String MY_URL
         {
             get { return _myURL; }
             set { _myURL = value; }
         }
 
-        public static String MY_PORT
+        public String MY_PORT
         {
             get { return _myPort; }
             set { _myPort = value; }
@@ -135,7 +135,7 @@ namespace Datastore
 
         internal void endTimer()
         {
-            //TIMER.Enabled = false;
+            TIMER.Enabled = false;
         }
     }
 }

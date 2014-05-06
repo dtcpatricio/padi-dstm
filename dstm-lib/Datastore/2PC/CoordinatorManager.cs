@@ -13,11 +13,11 @@ namespace Datastore
     // Replacing TransactionManager - coordinator part
     internal class CoordinatorManager : _2PCManager
     {
-        private static Dictionary<String, ParticipantResponse> _participantURLs;
+        private Dictionary<String, ParticipantResponse> _participantURLs;
 
         private int _number_responses = 0;
 
-        private static bool _allResponses = false;
+        private bool _allResponses = false;
 
         internal CoordinatorManager(TentativeTx tx, List<String> URLs)
         {
@@ -42,13 +42,15 @@ namespace Datastore
         {
         }
 
-        internal static void onTimeAbort(object source, ElapsedEventArgs e)
+        internal void onTimeAbort(object source, ElapsedEventArgs e)
         {
-            foreach (String url in _participantURLs.Keys)
+            Console.WriteLine("CoordinatorManager.onTimeAbort TIMER TRIGGERED");
+
+            
+            lock (this)
             {
-                // TODO: A thread per participant
-                IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                participant.doAbort(TX.TXID, MY_URL);
+                MY_DECISION = TransactionDecision.ABORT;
+                Monitor.PulseAll(this);
             }
         }
 
@@ -93,7 +95,7 @@ namespace Datastore
                     //RemAr.AsyncWaitHandle.WaitOne();
                     //Console.WriteLine(RemoteDel.EndInvoke(RemAr));
                 }
-                //timer();
+                timer();
                 MY_DECISION = waitParticipantsResponse();
                 evaluateMyDecision();
             }
@@ -118,7 +120,7 @@ namespace Datastore
             {
                 if(!_allResponses)
                     Monitor.Wait(this);
-                
+                endTimer();
                 foreach (String url in _participantURLs.Keys)
                 {
                     if (_participantURLs[url].Equals(ParticipantResponse.NORESPONSE))
@@ -131,7 +133,7 @@ namespace Datastore
                         return TransactionDecision.COMMIT;
                 }
             }
-            return TransactionDecision.DEFAULT;
+            return TransactionDecision.ABORT;
         }
 
         internal void receivedAllResponses()
@@ -179,7 +181,10 @@ namespace Datastore
             {
                 // TODO: A thread per participant
                 IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                participant.doAbort(TX.TXID, MY_URL);
+                //participant.doCommit(TX.TXID, MY_URL);
+                RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(participant.doAbort);
+                // Call delegate to remote method
+                IAsyncResult RemAr = RemoteDel.BeginInvoke(TX.TXID, MY_URL, null, null);
             }
         }
 

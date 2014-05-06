@@ -2,18 +2,23 @@
 using PADI_DSTM;
 
 class SampleApp {
+    
     static void Main(string[] args) {
         bool res;
 
         PadiDstm.Init();
-
         res = PadiDstm.TxBegin();
+        Console.WriteLine("Transaction = " + res);
         PadInt pi_a = PadiDstm.CreatePadInt(12);
         PadInt pi_b = PadiDstm.CreatePadInt(20);
         PadInt pi_c = PadiDstm.CreatePadInt(43);
+        
+        Console.ReadLine();
         res = PadiDstm.TxCommit();
+        Console.WriteLine("Transaction committed = " + res);
 
         res = PadiDstm.TxBegin();
+        Console.WriteLine("Transaction = " + res);
         pi_a = PadiDstm.AccessPadInt(12);
         pi_b = PadiDstm.AccessPadInt(20);
         pi_c = PadiDstm.AccessPadInt(43);
@@ -28,7 +33,10 @@ class SampleApp {
         res = PadiDstm.Freeze("tcp://localhost:2001/Server");
         res = PadiDstm.Recover("tcp://localhost:2001/Server");
         res = PadiDstm.Fail("tcp://localhost:2002/Server");
+
+        Console.ReadLine();
         res = PadiDstm.TxCommit();
+        Console.WriteLine("Transaction committed = " + res);
         Console.ReadLine();
     }
 }
