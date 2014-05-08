@@ -8,6 +8,6 @@ namespace CommonTypes
 {
     public interface IMasterWorker
     {
-        void setAsReplica(IDictionary<int, string> availableServers);
+        void setAsReplica(Dictionary<int, string> availableServers);
     }
 }

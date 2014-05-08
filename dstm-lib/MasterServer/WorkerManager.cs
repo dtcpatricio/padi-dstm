@@ -18,10 +18,10 @@ namespace MasterServer
         //static private IDictionary<int, string> padIntUids = new Dictionary<int, string>();
 
         // List of available workers
-        static private IDictionary<int, string> availableServers = new Dictionary<int, string>();
+        static private Dictionary<int, string> availableServers = new Dictionary<int, string>();
 
         // List of failed workers
-        static private IDictionary<int, string> failedServers = new Dictionary<int, string>();
+        static private Dictionary<int, string> failedServers = new Dictionary<int, string>();
 
         static private String _replicaURL = null;
 
@@ -98,12 +98,12 @@ namespace MasterServer
         }
 
         // TODO: Datastore failed to reply a Am Alive message
-        internal void onTimeFail(object source, ElapsedEventArgs e)
+        internal static void onTimeFail(object source, ElapsedEventArgs e)
         {
 
         }
 
-        internal void timer()
+        internal static void timer()
         {
             // Create a timer with a ten second interval.
             TIMER = new Timer(15000);

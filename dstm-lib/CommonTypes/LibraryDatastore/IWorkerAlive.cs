@@ -8,6 +8,6 @@ namespace CommonTypes
 {
     public interface IWorkerAlive
     {
-        public void IAmAlive(String url);
+        void IAmAlive(String url);
     }
 }

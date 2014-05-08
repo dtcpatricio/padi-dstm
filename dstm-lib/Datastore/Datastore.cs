@@ -135,13 +135,13 @@ namespace Datastore
         }
 
         // TODO: Send heartbeat to Master server
-        internal void sendIAmAlive(object source, ElapsedEventArgs e)
+        internal static void sendIAmAlive(object source, ElapsedEventArgs e)
         {
 
         }
 
         // Warning: Carefull with delays between sending "I Am Alive" e Master timer to check Heartbeat
-        internal void timer()
+        internal static void timer()
         {
             // Create a timer with a ten second interval.
             TIMER = new Timer(12000);
@@ -175,7 +175,6 @@ namespace Datastore
             if(tx.COORDINATOR.MY_DECISION.Equals(TransactionDecision.ABORT))
                 return false; 
             
-
             return true;
         }
 
