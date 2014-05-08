@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
+using System.Timers;
 
 namespace MasterServer
 {
@@ -24,6 +25,15 @@ namespace MasterServer
 
         static private String _replicaURL = null;
 
+        //timer
+        private static Timer _timer;
+
+
+        internal static Timer TIMER
+        {
+            get { return _timer; }
+            set { _timer = value; }
+        }
 
         internal static String REPLICAURL 
         {
@@ -80,6 +90,32 @@ namespace MasterServer
                 url + "MasterWorker");
             remote.setAsReplica(availableServers);
         }
+
+        // TODO: reset timer for the specified worker_url
+        internal static void IAmAlive(String worker_url)
+        {
+            
+        }
+
+        // TODO: Datastore failed to reply a Am Alive message
+        internal void onTimeFail(object source, ElapsedEventArgs e)
+        {
+
+        }
+
+        internal void timer()
+        {
+            // Create a timer with a ten second interval.
+            TIMER = new Timer(15000);
+
+            // Hook up the event handler for the Elapsed event.
+            TIMER.Elapsed += new ElapsedEventHandler(onTimeFail);
+
+            // Only raise the event the first time Interval elapses.
+            TIMER.AutoReset = false;
+            TIMER.Enabled = true;
+        }
+
 
         internal static IDictionary<int, string> getAvailableServers()
         {

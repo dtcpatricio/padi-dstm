@@ -29,6 +29,11 @@ namespace MasterServer
                 "LibraryComm",
                 WellKnownObjectMode.Singleton);
 
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(LibraryComm),
+                "IWorkerAlive",
+                WellKnownObjectMode.Singleton);
+
             System.Console.WriteLine("Registered Master Server LibraryComm object on:\r\ntcp://localhost:8086/LibraryComm");
 
             System.Console.WriteLine("Master Server running...");

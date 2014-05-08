@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace Datastore
 {
@@ -16,6 +17,16 @@ namespace Datastore
 
         // maybe it should not be here
         private static string _serverURL;
+
+        //timer for sending heartbeat
+        private static Timer _timer;
+
+
+        internal static Timer TIMER
+        {
+            get { return _timer; }
+            set { TIMER = value; }
+        }
 
         internal static string SERVERURL
         {
@@ -121,6 +132,26 @@ namespace Datastore
             ServerObject obj = new ServerObject(uid);
             _serverObjects.Add(obj);
             return true;
+        }
+
+        // TODO: Send heartbeat to Master server
+        internal void sendIAmAlive(object source, ElapsedEventArgs e)
+        {
+
+        }
+
+        // Warning: Carefull with delays between sending "I Am Alive" e Master timer to check Heartbeat
+        internal void timer()
+        {
+            // Create a timer with a ten second interval.
+            TIMER = new Timer(12000);
+
+            // Hook up the event handler for the Elapsed event.
+            TIMER.Elapsed += new ElapsedEventHandler(sendIAmAlive);
+
+            // Only raise the event the first time Interval elapses.
+            TIMER.AutoReset = false;
+            TIMER.Enabled = true;
         }
 
 
