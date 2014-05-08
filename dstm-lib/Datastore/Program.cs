@@ -40,6 +40,14 @@ namespace Datastore
                 WellKnownObjectMode.SingleCall);
             System.Console.WriteLine("Registered DatastoreOps on tcp://localhost:" + port + "/DatastoreOps");
 
+
+            // - MasterWorker
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(DatastoreOps),
+                "IMasterWorker",
+                WellKnownObjectMode.SingleCall);
+            System.Console.WriteLine("Registered MasterWorker on tcp://localhost:" + port + "/MasterWorker");
+
             // TODO: Not sure if creation of 2 services corresponding to participant and coordinator, or 
             // integration with already specified services (RemotePadInt or DatastoreOps)
             // Participant or coordinator

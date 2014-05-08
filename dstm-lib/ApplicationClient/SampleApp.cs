@@ -2,7 +2,7 @@
 using PADI_DSTM;
 
 class SampleApp {
-  /*  
+  
     static void Main(string[] args) {
         bool res;
 
@@ -39,5 +39,5 @@ class SampleApp {
         Console.WriteLine("Transaction committed = " + res);
         Console.ReadLine();
     }
-   */
+   
 }

@@ -46,7 +46,9 @@
     <Compile Include="IRemoteOperations.cs" />
     <Compile Include="LibraryDatastore\IRemotePadInt.cs" />
     <Compile Include="LibraryDatastore\IEndTransaction.cs" />
+    <Compile Include="LibraryDatastore\IWorkerAlive.cs" />
     <Compile Include="LibraryMaster\ILibraryComm.cs" />
+    <Compile Include="MasterDatastore\IMasterWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TxException.cs" />
   </ItemGroup>

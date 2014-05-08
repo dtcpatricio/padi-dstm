@@ -59,6 +59,8 @@
     <Compile Include="RemotePadInt.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Replica\MasterWorker.cs" />
+    <Compile Include="Replica\Replica.cs" />
     <Compile Include="ServerObject.cs" />
     <Compile Include="TentativeTx.cs" />
   </ItemGroup>
