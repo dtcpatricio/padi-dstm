@@ -43,8 +43,8 @@ namespace Datastore
 
             // - MasterWorker
             RemotingConfiguration.RegisterWellKnownServiceType(
-                typeof(DatastoreOps),
-                "IMasterWorker",
+                typeof(MasterWorker),
+                "MasterWorker",
                 WellKnownObjectMode.SingleCall);
             System.Console.WriteLine("Registered MasterWorker on tcp://localhost:" + port + "/MasterWorker");
 

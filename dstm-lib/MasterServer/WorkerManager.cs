@@ -57,7 +57,7 @@ namespace MasterServer
             if (!availableServers.Values.Contains(url) &&
                 !failedServers.Values.Contains(url))
             {
-                if (ReplicaExists())
+                if (availableServers.Count != 1)
                 {
                     int id = serverID++;
                     availableServers.Add(id, url);
@@ -67,6 +67,7 @@ namespace MasterServer
                 else
                 {
                     CreateReplica(url);
+                    Console.WriteLine("A Datastore Replica was created on " + url + "\r\n");
                     return true;
                 }
             }
@@ -74,7 +75,11 @@ namespace MasterServer
                 return false;
         }
 
-        
+        internal static int totalServers()
+        {
+            return availableServers.Count + failedServers.Count;
+        }
+
         // Verifies if the replica has been createad
         internal static bool ReplicaExists()
         {
@@ -89,6 +94,8 @@ namespace MasterServer
             IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
                 url + "MasterWorker");
             remote.setAsReplica(availableServers);
+
+            REPLICAURL = url;
         }
 
         // TODO: reset timer for the specified worker_url
