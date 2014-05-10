@@ -9,5 +9,6 @@ namespace CommonTypes
     public interface IMasterWorker
     {
         void setAsReplica(Dictionary<int, string> availableServers);
+        void setReplica(string url);
     }
 }

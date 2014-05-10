@@ -52,15 +52,17 @@ namespace MasterServer
         }
         */
 
+        // Second Server added is always the replica server
         internal static bool addServer(string url)
         {
             if (!availableServers.Values.Contains(url) &&
                 !failedServers.Values.Contains(url))
             {
-                if (availableServers.Count != 1)
+                if (totalServers() != 1)
                 {
                     int id = serverID++;
                     availableServers.Add(id, url);
+                    SetReplica(url);
                     Console.WriteLine("A Datastore Server was added on " + url + "\r\nwith ID " + id);
                     return true;
                 }
@@ -77,7 +79,10 @@ namespace MasterServer
 
         internal static int totalServers()
         {
-            return availableServers.Count + failedServers.Count;
+            int total = 0;
+            if (REPLICAURL != null)
+                total++;
+            return availableServers.Count + failedServers.Count + total;
         }
 
         // Verifies if the replica has been createad
@@ -98,10 +103,21 @@ namespace MasterServer
             REPLICAURL = url;
         }
 
+        // Set the replica for the worker if there is one
+        internal static void SetReplica(string url)
+        {
+            if (REPLICAURL != null)
+            {
+                IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                    url + "MasterWorker");
+                remote.setReplica(REPLICAURL);
+            }
+        }
+
         // TODO: reset timer for the specified worker_url
         internal static void IAmAlive(String worker_url)
         {
-            
+            Console.WriteLine("I Am ALIVE " + worker_url + "!");
         }
 
         // TODO: Datastore failed to reply a Am Alive message
@@ -110,6 +126,7 @@ namespace MasterServer
 
         }
 
+        // TODO: Detect failure if worker fails to reply
         internal static void timer()
         {
             // Create a timer with a ten second interval.

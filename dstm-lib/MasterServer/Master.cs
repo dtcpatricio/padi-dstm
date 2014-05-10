@@ -30,8 +30,8 @@ namespace MasterServer
                 WellKnownObjectMode.Singleton);
 
             RemotingConfiguration.RegisterWellKnownServiceType(
-                typeof(LibraryComm),
-                "IWorkerAlive",
+                typeof(WorkerAlive),
+                "WorkerAlive",
                 WellKnownObjectMode.Singleton);
 
             System.Console.WriteLine("Registered Master Server LibraryComm object on:\r\ntcp://localhost:8086/LibraryComm");

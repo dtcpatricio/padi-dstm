@@ -3,25 +3,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommonTypes;
 
 namespace Datastore
 {
     internal static class Replica
     {
+        // Worker's replica url
+        private static string _replicaURL;
 
-        internal static void ChangeToReplica(Dictionary<int, string> availableServers)
+
+        internal static string REPLICAURL
         {
-            //TODO: Change execution mode to replica mode
-            
-            //TODO: Notify all available servers that i am the replica
-            NotifyAllWorkers(availableServers);
+            get { return _replicaURL; }
+            set { _replicaURL = value; }
         }
 
+        
+        internal static void ChangeToReplica(Dictionary<int, string> availableServers)
+        {
+           //TODO: Change execution mode to replica mode
+            Datastore.startReplicaMode(availableServers);         
+        }
+
+        //TODO: Notify all available servers that i am the replica, the datastore url
         internal static void NotifyAllWorkers(Dictionary<int, string> availableServers)
         {
             foreach (int id in availableServers.Keys)
             {
                 //Notify worker that i am the replica
+                IReplicaWorker worker = (IReplicaWorker)Activator.GetObject(
+                    typeof(IReplicaWorker), availableServers[id] + "ReplicaWorker");
+                worker.setReplica(Datastore.SERVERURL);
             }
         }
 

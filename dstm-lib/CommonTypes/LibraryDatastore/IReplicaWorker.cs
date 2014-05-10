@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace CommonTypes
 {
-    public interface IDatastoreComm
+    public interface IReplicaWorker
     {
-        bool registerWorker(string url);
+        void setReplica(string url);
     }
 }

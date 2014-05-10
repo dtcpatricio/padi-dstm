@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting;
-using CommonTypes.DatastoreMaster;
+using CommonTypes;
 
 namespace Datastore
 {
@@ -19,11 +19,15 @@ namespace Datastore
 
             string masterURL = "tcp://localhost:8086/";
             string datastoreURL = "tcp://localhost:" + port + "/";
-
+            
             // register the TCP channel
             TcpChannel channel = new TcpChannel(Convert.ToInt32(port));
             
             ChannelServices.RegisterChannel(channel, true);
+
+            
+            Datastore.SERVERURL = datastoreURL;
+
 
             // register runtime services:
             // - RemotePadInt
@@ -40,13 +44,21 @@ namespace Datastore
                 WellKnownObjectMode.SingleCall);
             System.Console.WriteLine("Registered DatastoreOps on tcp://localhost:" + port + "/DatastoreOps");
 
-
+            
             // - MasterWorker
             RemotingConfiguration.RegisterWellKnownServiceType(
                 typeof(MasterWorker),
                 "MasterWorker",
                 WellKnownObjectMode.SingleCall);
             System.Console.WriteLine("Registered MasterWorker on tcp://localhost:" + port + "/MasterWorker");
+
+                   // - MasterWorker
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(ReplicaWorker),
+                "ReplicaWorker",
+                WellKnownObjectMode.SingleCall);
+            System.Console.WriteLine("Registered ReplicaWorker on tcp://localhost:" + port + "/ReplicaWorker");
+
 
             // TODO: Not sure if creation of 2 services corresponding to participant and coordinator, or 
             // integration with already specified services (RemotePadInt or DatastoreOps)
@@ -69,12 +81,14 @@ namespace Datastore
                 masterURL + "DatastoreComm");
             bool success = master.registerWorker(datastoreURL);
 
+            // Initialize heartbeat timer
+            Datastore.timerAlive();
+
             if (!success)
             {
                 // kill server
             }
 
-            Datastore.SERVERURL = datastoreURL;
             // Quit message and waits for a key press
             System.Console.WriteLine("<enter> to kill the server");
             System.Console.ReadLine();

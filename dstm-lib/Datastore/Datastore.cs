@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using CommonTypes;
 
 namespace Datastore
 {
@@ -15,23 +16,29 @@ namespace Datastore
 
         private static List<ServerObject> _serverObjects = new List<ServerObject>();
 
+        //Hard coded master url
+        private static string _masterURL = "tcp://localhost:8086/";
+
         // maybe it should not be here
         private static string _serverURL;
 
         //timer for sending heartbeat
         private static Timer _timer;
 
+        // Execution mode of server
+        private static ExecutionMode _executionMode = ExecutionMode.WORKER;
 
-        internal static Timer TIMER
-        {
-            get { return _timer; }
-            set { TIMER = value; }
-        }
-
+        
         internal static string SERVERURL
         {
             get { return _serverURL; }
             set { _serverURL = value; }
+        }
+
+        internal static ExecutionMode EXECUTIONMODE
+        {
+            get { return _executionMode; }
+            set { _executionMode = value; }
         }
 
         /**
@@ -138,20 +145,27 @@ namespace Datastore
         internal static void sendIAmAlive(object source, ElapsedEventArgs e)
         {
 
+            // register the datastore server on the master server
+            IWorkerAlive master = (IWorkerAlive)Activator.GetObject(
+                typeof(IWorkerAlive),
+                _masterURL + "WorkerAlive");
+
+            master.IAmAlive(SERVERURL);
+
         }
 
         // Warning: Carefull with delays between sending "I Am Alive" e Master timer to check Heartbeat
-        internal static void timer()
+        internal static void timerAlive()
         {
-            // Create a timer with a ten second interval.
-            TIMER = new Timer(12000);
+            // Create a timer with a twelve second interval.
+            _timer = new Timer(12000);
 
             // Hook up the event handler for the Elapsed event.
-            TIMER.Elapsed += new ElapsedEventHandler(sendIAmAlive);
+            _timer.Elapsed += new ElapsedEventHandler(sendIAmAlive);
 
             // Only raise the event the first time Interval elapses.
-            TIMER.AutoReset = false;
-            TIMER.Enabled = true;
+            _timer.AutoReset = true;
+            _timer.Enabled = true;
         }
 
 
@@ -231,6 +245,12 @@ namespace Datastore
             TentativeTx tx = _tentativeTransactions[txID];
             tx.PARTICIPANT.doAbort(txID, coordURL);
         }
-        
+
+        // Change the mode of execution of datastore to replica
+        internal static void startReplicaMode(Dictionary<int, string> availableServers)
+        {
+            EXECUTIONMODE = ExecutionMode.REPLICA;
+            Replica.NotifyAllWorkers(availableServers);
+        }
     }
 }
