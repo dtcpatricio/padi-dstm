@@ -52,7 +52,7 @@ namespace Datastore
                 WellKnownObjectMode.SingleCall);
             System.Console.WriteLine("Registered MasterWorker on tcp://localhost:" + port + "/MasterWorker");
 
-                   // - MasterWorker
+            // - Replica communication with worker
             RemotingConfiguration.RegisterWellKnownServiceType(
                 typeof(ReplicaWorker),
                 "ReplicaWorker",
@@ -80,6 +80,13 @@ namespace Datastore
                 typeof(IDatastoreComm),
                 masterURL + "DatastoreComm");
             bool success = master.registerWorker(datastoreURL);
+
+            // - Worker communication with replica
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(ReplicaWorker),
+                "WorkerReplica",
+                WellKnownObjectMode.SingleCall);
+            System.Console.WriteLine("Registered Coordinator Interface on tcp://localhost:" + port + "/WorkerReplica");
 
             // Initialize heartbeat timer
             Datastore.timerAlive();

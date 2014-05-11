@@ -121,9 +121,11 @@ namespace MasterServer
         {
             if (REPLICAURL != null)
             {
+                Console.WriteLine("MASTER CALLING  SET REPLICA ON REPLICA");
                 IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
                     url + "MasterWorker");
                 remote.setReplica(REPLICAURL);
+                Console.WriteLine("-- MASTER CALLING  SET REPLICA ON REPLICA -- ");
             }
         }
 

@@ -4,10 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Runtime.Remoting.Messaging;
+using System.Runtime.Remoting;
+using System.IO;
 using CommonTypes;
 
 namespace Datastore
 {
+    [Serializable]
     internal static class Datastore
     {
         // TODO: refactor to use generic list classes and HashSet
@@ -19,7 +23,6 @@ namespace Datastore
         //Hard coded master url
         private static string _masterURL = "tcp://localhost:8086/";
 
-        // maybe it should not be here
         private static string _serverURL;
 
         //timer for sending heartbeat
@@ -28,7 +31,9 @@ namespace Datastore
         // Execution mode of server
         private static ExecutionMode _executionMode = ExecutionMode.WORKER;
 
+        public delegate void RemoteAsyncDelegate(string serverURL, List<ServerObject> updatedSO);
         
+
         internal static string SERVERURL
         {
             get { return _serverURL; }
@@ -39,6 +44,11 @@ namespace Datastore
         {
             get { return _executionMode; }
             set { _executionMode = value; }
+        }
+
+        internal static List<ServerObject> SERVEROBJECTS
+        {
+            get { return _serverObjects; }
         }
 
         /**
@@ -251,6 +261,28 @@ namespace Datastore
         {
             EXECUTIONMODE = ExecutionMode.REPLICA;
             Replica.NotifyAllWorkers(availableServers);
+        }
+
+
+        //Send updated transaction written objects to replica if there is one
+        internal static void updateReplica(List<ServerObject> writtenObjects)
+        {
+            if (Replica.REPLICAURL != null)
+            {
+                IWorkerReplica replica = (IWorkerReplica)Activator.GetObject(
+                typeof(IWorkerReplica),
+                Replica.REPLICAURL + "WorkerReplica");
+
+                replica.update(_serverURL, writtenObjects);
+
+                /*
+                // Create delegate to remote method
+                RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(replica.update);
+                // Call delegate to remote method
+                Console.WriteLine("CALLING REPLICA TO UPDATE");
+                IAsyncResult RemAr = RemoteDel.BeginInvoke(_serverURL, writtenObjects, null, null);
+                Console.WriteLine("-- CALLING REPLICA TO UPDATE --");*/
+            }
         }
     }
 }

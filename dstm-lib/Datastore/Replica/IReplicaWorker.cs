@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CommonTypes
+namespace Datastore
 {
     public interface IReplicaWorker
     {
-        void setReplica(string url);
+        //Sends the replica url
+        List<ServerObject> fetchData(string url);
     }
 }

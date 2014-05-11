@@ -13,8 +13,7 @@ namespace Datastore
         private static string _replicaURL;
 
         // List of stored servers objects naturally orded from available servers in Master
-        private static Dictionary<int, List<ServerObject>> storedServerObjects = new Dictionary<int, List<ServerObject>>();
-
+        private static Dictionary<string, List<ServerObject>> worker_serverObjects = new Dictionary<string, List<ServerObject>>();
 
         internal static string REPLICAURL
         {
@@ -25,26 +24,47 @@ namespace Datastore
         
         internal static void ChangeToReplica(Dictionary<int, string> availableServers)
         {
-           //TODO: Change execution mode to replica mode
             Datastore.startReplicaMode(availableServers);         
         }
 
-        //TODO: Notify all available servers that i am the replica, the datastore url
+        // Fetch the data from the servers and notify them that I am the Replica 
         internal static void NotifyAllWorkers(Dictionary<int, string> availableServers)
         {
             foreach (int id in availableServers.Keys)
             {
-                //Notify worker that i am the replica
                 IReplicaWorker worker = (IReplicaWorker)Activator.GetObject(
                     typeof(IReplicaWorker), availableServers[id] + "ReplicaWorker");
-                worker.setReplica(Datastore.SERVERURL);
+                worker_serverObjects[availableServers[id]] = worker.fetchData(Datastore.SERVERURL);
             }
         }
 
         // Update function called by the workers, receives list of server objects 
-        internal static void update(List<ServerObject> updatedList)
+        // TEST
+        internal static void update(string worker_url, List<ServerObject> updatedList)
         {
-
+            List<ServerObject> oldList = worker_serverObjects[worker_url];
+            int j = 0;
+            bool updated = false;
+            foreach (ServerObject updatedSO in updatedList)
+            {
+                foreach(ServerObject oldSO in oldList) 
+                {
+                    if (updatedSO.UID.Equals(oldSO.UID))
+                    {
+                        oldList[j] = updatedSO;
+                        j = 0;
+                        updated = true;
+                        break;
+                    }
+                    j++;
+                }
+                if (updated == false)
+                {
+                    oldList.Add(updatedSO);
+                    updated = false;
+                }
+                j = 0;
+            }
         }
     }
 }

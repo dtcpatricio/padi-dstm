@@ -46,7 +46,6 @@
     <Compile Include="IRemoteOperations.cs" />
     <Compile Include="LibraryDatastore\IRemotePadInt.cs" />
     <Compile Include="LibraryDatastore\IEndTransaction.cs" />
-    <Compile Include="LibraryDatastore\IReplicaWorker.cs" />
     <Compile Include="LibraryMaster\ILibraryComm.cs" />
     <Compile Include="LibraryMaster\IMasterWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

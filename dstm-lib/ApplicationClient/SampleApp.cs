@@ -15,7 +15,11 @@ class SampleApp {
         
         Console.ReadLine();
         res = PadiDstm.TxCommit();
+
         Console.WriteLine("Transaction committed = " + res);
+
+        Console.WriteLine("Press <Enter> to start new transaction");
+        Console.ReadLine();
 
         res = PadiDstm.TxBegin();
         Console.WriteLine("Transaction = " + res);

@@ -99,6 +99,12 @@ namespace Datastore
                 timer(10000);
                 MY_DECISION = waitParticipantsResponse();
                 evaluateMyDecision();
+
+                if (MY_DECISION.Equals(TransactionDecision.COMMIT))
+                {
+                    // Send an update to the replica if there is one
+                    Datastore.updateReplica(TX.WRITTENOBJECTS);
+                }
             }
             else
             {
@@ -106,6 +112,9 @@ namespace Datastore
                 // Default commit
                 MY_DECISION = TransactionDecision.COMMIT;
                 Console.WriteLine("AFTER MY_DECISION is commit and there are no participants");
+
+                // Send an update to the replica if there is one
+                Datastore.updateReplica(TX.WRITTENOBJECTS);
             }
             // First phase of commit, temporary write to disk
             writeAheadLog();

@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Datastore
 {
-    internal class ServerObject
+    [Serializable]
+    //WARNING: Changed the accessiblity of ServerObject to public because of fetch data
+    public class ServerObject
     {
         private int _uid;
         private int _value;

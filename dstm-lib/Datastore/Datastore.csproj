@@ -60,9 +60,12 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Replica\ExecutionMode.cs" />
+    <Compile Include="Replica\IReplicaWorker.cs" />
+    <Compile Include="Replica\IWorkerReplica.cs" />
     <Compile Include="Replica\MasterWorker.cs" />
     <Compile Include="Replica\Replica.cs" />
     <Compile Include="Replica\ReplicaWorker.cs" />
+    <Compile Include="Replica\WorkerReplica.cs" />
     <Compile Include="ServerObject.cs" />
     <Compile Include="TentativeTx.cs" />
   </ItemGroup>
