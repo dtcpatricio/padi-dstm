@@ -12,6 +12,9 @@ namespace Datastore
         // Worker's replica url
         private static string _replicaURL;
 
+        // List of stored servers objects naturally orded from available servers in Master
+        private static Dictionary<int, List<ServerObject>> storedServerObjects = new Dictionary<int, List<ServerObject>>();
+
 
         internal static string REPLICAURL
         {

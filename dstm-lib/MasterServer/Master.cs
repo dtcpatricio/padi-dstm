@@ -37,6 +37,9 @@ namespace MasterServer
             System.Console.WriteLine("Registered Master Server LibraryComm object on:\r\ntcp://localhost:8086/LibraryComm");
 
             System.Console.WriteLine("Master Server running...");
+           
+            //HeartBeat.timerAlive();
+            
             System.Console.ReadLine();
 
         }

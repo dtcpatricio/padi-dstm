@@ -9,6 +9,7 @@ using System.Timers;
 
 namespace MasterServer
 {
+    // Consider : Removing all serverID, let the server be identified by the url
     internal static class WorkerManager
     {
         // Identifiers for servers
@@ -23,23 +24,8 @@ namespace MasterServer
         // List of failed workers
         static private Dictionary<int, string> failedServers = new Dictionary<int, string>();
 
+        
         static private String _replicaURL = null;
-
-        //timer
-        private static Timer _timer;
-
-
-        internal static Timer TIMER
-        {
-            get { return _timer; }
-            set { _timer = value; }
-        }
-
-        internal static String REPLICAURL 
-        {
-            get { return _replicaURL; }
-            set { _replicaURL = value; }
-        }
 
         /*
         static public void printAvailableWorkers()
@@ -52,7 +38,48 @@ namespace MasterServer
         }
         */
 
+        internal static String REPLICAURL
+        {
+            get { return _replicaURL; }
+            set { _replicaURL = value; }
+        }
+
+        internal static IDictionary<int, string> getAvailableServers()
+        {
+            return availableServers;
+        }
+
+
+        internal static bool isFailedServer(string url)
+        {
+            foreach (int id in failedServers.Keys)
+            {
+                if (failedServers[id].Equals(url))
+                    return true;
+            }
+            return false;
+        }
+
+        // Verifies if the replica has been createad
+        internal static bool ReplicaExists()
+        {
+            if (REPLICAURL != null)
+                return true;
+            return false;
+        }
+
+        // Returns the total number of servers including the replica and failed servers
+        internal static int totalServers()
+        {
+            int total = 0;
+            if (REPLICAURL != null)
+                total++;
+            return availableServers.Count + failedServers.Count + total;
+        }
+
+
         // Second Server added is always the replica server
+        // TODO: FIX UGLY CODE
         internal static bool addServer(string url)
         {
             if (!availableServers.Values.Contains(url) &&
@@ -63,34 +90,20 @@ namespace MasterServer
                     int id = serverID++;
                     availableServers.Add(id, url);
                     SetReplica(url);
+                    HeartBeat.TIMERSERVERS.Add(url, HeartBeat.timerAlive(url));
                     Console.WriteLine("A Datastore Server was added on " + url + "\r\nwith ID " + id);
                     return true;
                 }
                 else
                 {
                     CreateReplica(url);
+                    HeartBeat.TIMERSERVERS.Add(url, HeartBeat.timerAlive(url));
                     Console.WriteLine("A Datastore Replica was created on " + url + "\r\n");
                     return true;
                 }
             }
             else
                 return false;
-        }
-
-        internal static int totalServers()
-        {
-            int total = 0;
-            if (REPLICAURL != null)
-                total++;
-            return availableServers.Count + failedServers.Count + total;
-        }
-
-        // Verifies if the replica has been createad
-        internal static bool ReplicaExists()
-        {
-            if(REPLICAURL != null) 
-                return true;
-            return false;
         }
 
         // Send a a setAsReplica for the url worker
@@ -114,36 +127,24 @@ namespace MasterServer
             }
         }
 
-        // TODO: reset timer for the specified worker_url
-        internal static void IAmAlive(String worker_url)
+        // Sets the detected url to failed
+        internal static void setFailedServer(string url)
         {
-            Console.WriteLine("I Am ALIVE " + worker_url + "!");
+            if (REPLICAURL != null && REPLICAURL.Equals(url))
+            {
+                REPLICAURL = null;
+                return;
+            }
+            foreach (int id in availableServers.Keys)
+            {
+                if (availableServers[id].Equals(url))
+                {
+                    failedServers.Add(id, url);
+                    availableServers.Remove(id);
+                    return;
+                }
+            }
         }
 
-        // TODO: Datastore failed to reply a Am Alive message
-        internal static void onTimeFail(object source, ElapsedEventArgs e)
-        {
-
-        }
-
-        // TODO: Detect failure if worker fails to reply
-        internal static void timer()
-        {
-            // Create a timer with a ten second interval.
-            TIMER = new Timer(15000);
-
-            // Hook up the event handler for the Elapsed event.
-            TIMER.Elapsed += new ElapsedEventHandler(onTimeFail);
-
-            // Only raise the event the first time Interval elapses.
-            TIMER.AutoReset = false;
-            TIMER.Enabled = true;
-        }
-
-
-        internal static IDictionary<int, string> getAvailableServers()
-        {
-            return availableServers;
-        }
     }
 }

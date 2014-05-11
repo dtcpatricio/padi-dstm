@@ -11,7 +11,7 @@ namespace MasterServer
     {
         public void IAmAlive(String worker_url)
         {
-            WorkerManager.IAmAlive(worker_url);
+            HeartBeat.IAmAlive(worker_url);
         }
     }
 }

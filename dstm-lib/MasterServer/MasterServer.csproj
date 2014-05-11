@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DatastoreComm.cs" />
+    <Compile Include="HeartBeat.cs" />
     <Compile Include="LibraryComm.cs" />
     <Compile Include="LibraryManager.cs" />
     <Compile Include="Master.cs" />
