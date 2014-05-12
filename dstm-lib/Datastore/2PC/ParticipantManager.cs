@@ -96,7 +96,7 @@ namespace Datastore
 
             // Send an update to the replica if there is one
             // Participants written objects
-            Datastore.updateReplica(TX.WRITTENOBJECTS);
+            Replica.updateSucessor(TX.WRITTENOBJECTS);
         }
 
         // Only for participants

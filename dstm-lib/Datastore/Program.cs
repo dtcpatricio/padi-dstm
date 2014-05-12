@@ -88,7 +88,7 @@ namespace Datastore
             System.Console.WriteLine("Registered Coordinator Interface on tcp://localhost:" + port + "/WorkerReplica");
 
             // Initialize heartbeat timer
-            Datastore.timerAlive();
+            //Datastore.timerAlive();
 
             if (!success)
             {

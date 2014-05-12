@@ -12,25 +12,23 @@ namespace Datastore
 {
     class MasterWorker : MarshalByRefObject, IMasterWorker
     {
-        public void setAsReplica(Dictionary<int, string> availableServers)
+       /* public void setAsReplica(Dictionary<int, string> availableServers)
         {
             Replica.ChangeToReplica(availableServers);
         }
-
-        //TODO: Each time a worker registers, the master send the replica, if there is one
-        // Replica url that worker uses maybe it should be placed in worker
-        public void setReplica(string replica_url) 
-        {
-            Console.WriteLine("My replica is " + replica_url);
-            Replica.REPLICAURL = replica_url;
-        }
-
 
         // The master ID of the worker server to replace
         public void setWorker(int id)
         {
             Console.WriteLine("NOW IM A WORKER WITH ID=" + id);
             Replica.changeToWorker(id);
+        }
+        */
+        // The master ID of the worker server to replace
+        public void setReplica(string sucessor, string predecessor)
+        {
+            Console.WriteLine("NOW MY SUCESSOR IS = " + sucessor + " PREDECESSOR IS = " + predecessor);
+            Replica.setReplica(sucessor, predecessor);
         }
     }
 }

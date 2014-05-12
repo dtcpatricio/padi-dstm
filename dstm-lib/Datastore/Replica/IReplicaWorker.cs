@@ -9,6 +9,6 @@ namespace Datastore
     internal interface IReplicaWorker
     {
         //Sends the replica url
-        List<ServerObject> fetchData(string url);
+       // List<ServerObject> fetchData(string url);
     }
 }

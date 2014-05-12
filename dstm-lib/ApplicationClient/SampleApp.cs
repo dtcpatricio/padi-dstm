@@ -29,6 +29,9 @@ class SampleApp {
         pi_a.Write(36);
         pi_b.Write(37);
         pi_c.Write(69);
+
+        pi_c.Write(70);
+        
         Console.WriteLine("a = " + pi_a.Read());
         Console.WriteLine("b = " + pi_b.Read());
         Console.WriteLine("c = " + pi_c.Read());

@@ -75,55 +75,55 @@ namespace Datastore
         // only the coordinator should call this
         internal void prepare()
         {
-            Console.WriteLine("I'm the coordinator: " + MY_URL);
-            if (_participantURLs.Count > 0)
+            lock (_participantURLs)
             {
-                foreach (String url in _participantURLs.Keys)
+                Console.WriteLine("I'm the coordinator: " + MY_URL);
+                if (_participantURLs.Count > 0)
                 {
-                    // TODO: A thread per participant
-                    // after all thread are sent, create one main thread responsible
-                    // for receiving votes (yes or no) - Assync callback (ver exemplo da aula 4) 
-                    // and another one to run the timer
-                    Console.WriteLine("URL: " + url);
-                    IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
-                    //participant.canCommit(TX.TXID, MY_URL);
+                    foreach (String url in _participantURLs.Keys)
+                    {
+                        // TODO: A thread per participant
+                        // after all thread are sent, create one main thread responsible
+                        // for receiving votes (yes or no) - Assync callback (ver exemplo da aula 4) 
+                        // and another one to run the timer
+                        Console.WriteLine("URL: " + url);
+                        IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
+                        //participant.canCommit(TX.TXID, MY_URL);
 
-                    // Create delegate to remote method
-                    RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(participant.canCommit);
-                    // Call delegate to remote method
-                    IAsyncResult RemAr = RemoteDel.BeginInvoke(TX.TXID, MY_URL, null, null);
-                    // Wait for the end of the call and then explictly call EndInvoke
-                    //RemAr.AsyncWaitHandle.WaitOne();
-                    //Console.WriteLine(RemoteDel.EndInvoke(RemAr));
+                        // Create delegate to remote method
+                        RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(participant.canCommit);
+                        // Call delegate to remote method
+                        IAsyncResult RemAr = RemoteDel.BeginInvoke(TX.TXID, MY_URL, null, null);
+                        // Wait for the end of the call and then explictly call EndInvoke
+                        //RemAr.AsyncWaitHandle.WaitOne();
+                        //Console.WriteLine(RemoteDel.EndInvoke(RemAr));
+                    }
+                    timer(10000);
+                    MY_DECISION = waitParticipantsResponse();
+                    evaluateMyDecision();
+
+                    if (MY_DECISION.Equals(TransactionDecision.COMMIT))
+                    {
+                        // Send an update to the replica if there is one
+                        Replica.updateSucessor(TX.WRITTENOBJECTS);
+                    }
                 }
-                timer(10000);
-                MY_DECISION = waitParticipantsResponse();
-                evaluateMyDecision();
-                
-                if (MY_DECISION.Equals(TransactionDecision.COMMIT))
+                else
                 {
+                    // Coordinator decision
+                    // Default commit
+                    MY_DECISION = TransactionDecision.COMMIT;
+                    Console.WriteLine("AFTER MY_DECISION is commit and there are no participants");
+
                     // Send an update to the replica if there is one
-                    Datastore.updateReplica(TX.WRITTENOBJECTS);
+                    Replica.updateSucessor(TX.WRITTENOBJECTS);
                 }
-                 
-            }
-            else
-            {
-                // Coordinator decision
-                // Default commit
-                MY_DECISION = TransactionDecision.COMMIT;
-                Console.WriteLine("AFTER MY_DECISION is commit and there are no participants");
+                // First phase of commit, temporary write to disk
+                writeAheadLog();
 
-                // Send an update to the replica if there is one
-                Datastore.updateReplica(TX.WRITTENOBJECTS);
+                if (MY_DECISION.Equals(TransactionDecision.COMMIT))
+                    writePermanentLog();
             }
-            // First phase of commit, temporary write to disk
-            writeAheadLog();
-
-            if (MY_DECISION.Equals(TransactionDecision.COMMIT))
-                writePermanentLog();
-        
-            
         }
 
         internal TransactionDecision waitParticipantsResponse()

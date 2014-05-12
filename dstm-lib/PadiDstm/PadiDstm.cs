@@ -122,8 +122,7 @@ namespace PADI_DSTM
             {
                 Console.WriteLine("PadiDstm.CreatePadInt TRUE");
                 PadInt padint = new PadInt(uid, serverURL);
-                padint.Write(0);
-
+               
                 return padint;
             }
             else

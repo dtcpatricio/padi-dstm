@@ -44,7 +44,7 @@ namespace MasterServer
             _timerServers[server_url].Enabled = false;
             _timerServers[server_url].AutoReset = false;
             _timerServers.Remove(server_url);
-            WorkerManager.setFailedServer(server_url);
+      //      WorkerManager.setFailedServer(server_url);
         }
         
         internal static void resetTimer(Timer timer)

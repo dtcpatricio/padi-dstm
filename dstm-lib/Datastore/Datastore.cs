@@ -26,7 +26,7 @@ namespace Datastore
         private static string _serverURL;
 
         //timer for sending heartbeat
-        private static Timer _timer;
+       // private static Timer _timer;
 
         // Execution mode of server
         private static ExecutionMode _executionMode = ExecutionMode.WORKER;
@@ -120,7 +120,7 @@ namespace Datastore
             if (earlierReadTS <= txID)
             {
                 ServerObject tentativeWrite = new ServerObject(uid, newVal, txID);
-                _serverObjects.Add(tentativeWrite);
+                replaceValue(tentativeWrite);
 
                 TentativeTx tx = _tentativeTransactions[txID];
                 tx.AddObject(tentativeWrite);
@@ -132,6 +132,23 @@ namespace Datastore
                 return false; // abort transaction
             }
         }
+
+        internal static void replaceValue(ServerObject serverObject)
+        {
+            int i = 0;
+            foreach (ServerObject so in _serverObjects)
+            {
+                if (so.UID == serverObject.UID)
+                {
+                    _serverObjects[i] = serverObject;
+                    return;
+                }
+                i++;
+            }
+            // Should never reach this point
+            Console.WriteLine("ERROR: Datastore.replaceValue ");
+        }
+
 
         /**
          * Creation and Access of server objects section
@@ -149,7 +166,7 @@ namespace Datastore
 
             ServerObject obj = new ServerObject(uid);
             _serverObjects.Add(obj);
-
+            Replica.updateSucessor(new List<ServerObject> { obj });
             return true;
         }
 
@@ -167,7 +184,7 @@ namespace Datastore
         }
 
         // Warning: Carefull with delays between sending "I Am Alive" e Master timer to check Heartbeat
-        internal static void timerAlive()
+       /* internal static void timerAlive()
         {
             // Create a timer with a twelve second interval.
             _timer = new Timer(12000);
@@ -179,7 +196,7 @@ namespace Datastore
             _timer.AutoReset = true;
             _timer.Enabled = true;
         }
-
+        */
 
         /**********************************************************************
          * 2PC protocol section
@@ -199,8 +216,13 @@ namespace Datastore
             tx.COORDINATOR = new CoordinatorManager(tx, URLs);
             tx.COORDINATOR.prepare();
             if(tx.COORDINATOR.MY_DECISION.Equals(TransactionDecision.ABORT))
-                return false; 
-            
+                return false;
+
+            Console.WriteLine("MY OBJECTS ARE : ");
+            foreach (ServerObject o in SERVEROBJECTS)
+            {
+                Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
+            }
             return true;
         }
 
@@ -259,15 +281,15 @@ namespace Datastore
         }
 
         // Change the mode of execution of datastore to replica
-        internal static void startReplicaMode(Dictionary<int, string> availableServers)
+      /*  internal static void startReplicaMode(Dictionary<int, string> availableServers)
         {
             EXECUTIONMODE = ExecutionMode.REPLICA;
             Replica.NotifyAllWorkers(availableServers);
         }
-
+        */
 
         //Send updated transaction written objects to replica if there is one
-        internal static void updateReplica(List<ServerObject> writtenObjects)
+        /*internal static void updateReplica(List<ServerObject> writtenObjects)
         {
             if (Replica.REPLICAURL != null)
             {
@@ -284,7 +306,8 @@ namespace Datastore
                 Console.WriteLine("CALLING REPLICA TO UPDATE");
                 IAsyncResult RemAr = RemoteDel.BeginInvoke(_serverURL, writtenObjects, null, null);
                 Console.WriteLine("-- CALLING REPLICA TO UPDATE --");*/
-            }
-        }
+         /*   }
+        }*/
+
     }
 }

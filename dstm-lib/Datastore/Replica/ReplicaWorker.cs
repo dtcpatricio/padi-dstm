@@ -10,11 +10,11 @@ namespace Datastore
     class ReplicaWorker : MarshalByRefObject, IReplicaWorker
     {
         //TODO: Sets the current datastore workers replica to allow communication
-        public List<ServerObject> fetchData(string url)
+        /*public List<ServerObject> fetchData(string url)
         {
             Console.WriteLine("Replica added with url: " + url);
             Replica.REPLICAURL = url;
             return Datastore.SERVEROBJECTS;
-        }
+        }*/
     }
 }

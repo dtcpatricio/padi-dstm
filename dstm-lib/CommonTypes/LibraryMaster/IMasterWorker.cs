@@ -8,8 +8,11 @@ namespace CommonTypes
 {
     public interface IMasterWorker
     {
-        void setAsReplica(Dictionary<int, string> availableServers);
-        void setReplica(string url);
+    /*    void setAsReplica(Dictionary<int, string> availableServers);
+        
         void setWorker(int id);
+        */
+        // Sets whos my sucessor and whos sending me updates
+        void setReplica(string sucessor, string predecessor);
     }
 }
