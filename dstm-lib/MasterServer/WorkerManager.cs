@@ -68,7 +68,7 @@ namespace MasterServer
             return false;
         }
 
-        // Returns the total number of servers including the replica and failed servers
+        // Returns the total number of servers incl94e0uding the replica and failed servers
         internal static int totalServers()
         {
             int total = 0;
@@ -109,11 +109,12 @@ namespace MasterServer
         // Send a a setAsReplica for the url worker
         internal static void CreateReplica(string url)
         {
+
+            REPLICAURL = url;
             IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
                 url + "MasterWorker");
             remote.setAsReplica(availableServers);
 
-            REPLICAURL = url;
         }
 
         // Set the replica for the worker if there is one
@@ -143,9 +144,20 @@ namespace MasterServer
                 {
                     failedServers.Add(id, url);
                     availableServers.Remove(id);
+                    
+                    //TODO: Tell replica to replace this failed server
+                    setWorker(id);
                     return;
                 }
             }
+        }
+
+        internal static void setWorker(int id)
+        {
+            IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                    REPLICAURL + "MasterWorker");
+
+            remote.setWorker(id);
         }
 
     }

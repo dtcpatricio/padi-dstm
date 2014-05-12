@@ -88,7 +88,8 @@ namespace PADI_DSTM
             }
 
             _transaction = null;
-            return false;
+            //return false;
+            return true;
         }
 
         public static bool TxAbort()
@@ -121,6 +122,8 @@ namespace PADI_DSTM
             {
                 Console.WriteLine("PadiDstm.CreatePadInt TRUE");
                 PadInt padint = new PadInt(uid, serverURL);
+                padint.Write(0);
+
                 return padint;
             }
             else

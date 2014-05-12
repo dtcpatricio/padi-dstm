@@ -24,5 +24,13 @@ namespace Datastore
             Console.WriteLine("My replica is " + replica_url);
             Replica.REPLICAURL = replica_url;
         }
+
+
+        // The master ID of the worker server to replace
+        public void setWorker(int id)
+        {
+            Console.WriteLine("NOW IM A WORKER WITH ID=" + id);
+            Replica.changeToWorker(id);
+        }
     }
 }

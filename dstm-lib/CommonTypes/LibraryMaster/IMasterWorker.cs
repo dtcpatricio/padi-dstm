@@ -10,5 +10,6 @@ namespace CommonTypes
     {
         void setAsReplica(Dictionary<int, string> availableServers);
         void setReplica(string url);
+        void setWorker(int id);
     }
 }

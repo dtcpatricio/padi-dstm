@@ -50,7 +50,8 @@ namespace MasterServer
         internal static void resetTimer(Timer timer)
         {
             timer.Enabled = false;
-            timer.Interval = TIMETOFAILURE;
+            //timer.Interval = TIMETOFAILURE;
+            timer.Interval = 15000;
             timer.AutoReset = true;
             timer.Enabled = true;
         }
@@ -61,6 +62,7 @@ namespace MasterServer
         {
             if (!WorkerManager.isFailedServer(worker_url))
             {
+                
                 Console.WriteLine("I Am ALIVE " + worker_url + "!");
                 resetTimer(_timerServers[worker_url]);
             }
@@ -68,7 +70,7 @@ namespace MasterServer
             {
                 // If the worker_url is not in the heartbeat servers it means
                 // that it came back from failure
-                Console.WriteLine("Dead I AM ALIVE " + worker_url + "!");
+                Console.WriteLine("CAME BACK FROM THE DEAD, BRAINS..." + worker_url + "!!!");
             }
         }
     }

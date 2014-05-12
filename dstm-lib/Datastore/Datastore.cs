@@ -49,6 +49,7 @@ namespace Datastore
         internal static List<ServerObject> SERVEROBJECTS
         {
             get { return _serverObjects; }
+            set { _serverObjects = value; }
         }
 
         /**
@@ -148,6 +149,7 @@ namespace Datastore
 
             ServerObject obj = new ServerObject(uid);
             _serverObjects.Add(obj);
+
             return true;
         }
 

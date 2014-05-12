@@ -27,6 +27,20 @@ namespace Datastore
             Datastore.startReplicaMode(availableServers);         
         }
 
+        //TODO:  Substitute the datasore list of server objects with worker_serverObjects[id]
+        internal static void changeToWorker(int id)
+        {
+            Datastore.SERVEROBJECTS = worker_serverObjects.ElementAt(id).Value;
+
+            Console.WriteLine("SO LENGTH = " + worker_serverObjects.ElementAt(id).Value.Count);
+
+            foreach (ServerObject s in worker_serverObjects.ElementAt(id).Value)
+            {
+                Console.WriteLine("UID = " + s.UID + " VALUE= " + s.VALUE);
+            }
+         
+        }
+
         // Fetch the data from the servers and notify them that I am the Replica 
         internal static void NotifyAllWorkers(Dictionary<int, string> availableServers)
         {
