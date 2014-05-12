@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Datastore
 {
-    public interface IReplicaWorker
+    internal interface IReplicaWorker
     {
         //Sends the replica url
         List<ServerObject> fetchData(string url);

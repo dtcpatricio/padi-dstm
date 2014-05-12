@@ -12,7 +12,9 @@ namespace MasterServer
     {
         // Timer for each server
         static private Dictionary<string, Timer> _timerServers = new Dictionary<string, Timer>();
-       
+
+        // Normal time is 15 000 miliseconds -> 15s
+        private const int TIMETOFAILURE = 15000;
 
         internal static Dictionary<string, Timer> TIMERSERVERS
         {
@@ -23,7 +25,7 @@ namespace MasterServer
         internal static Timer timerAlive(string server_url)
         {
             // Create a timer with a ten second interval.
-            Timer timer = new Timer(15000);
+            Timer timer = new Timer(TIMETOFAILURE);
 
             // Hook up the event handler for the Elapsed event.
             timer.Elapsed += (source, e) => onTimeFail(source, e, server_url);
@@ -48,7 +50,7 @@ namespace MasterServer
         internal static void resetTimer(Timer timer)
         {
             timer.Enabled = false;
-            timer.Interval = 15000;
+            timer.Interval = TIMETOFAILURE;
             timer.AutoReset = true;
             timer.Enabled = true;
         }

@@ -7,7 +7,6 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting;
 using CommonTypes;
-
 namespace Datastore
 {
     class Program
@@ -83,7 +82,7 @@ namespace Datastore
 
             // - Worker communication with replica
             RemotingConfiguration.RegisterWellKnownServiceType(
-                typeof(ReplicaWorker),
+                typeof(WorkerReplica),
                 "WorkerReplica",
                 WellKnownObjectMode.SingleCall);
             System.Console.WriteLine("Registered Coordinator Interface on tcp://localhost:" + port + "/WorkerReplica");

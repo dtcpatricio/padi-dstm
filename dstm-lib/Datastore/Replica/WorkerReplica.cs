@@ -10,7 +10,7 @@ namespace Datastore
     {
         public void update(string worker_url, List<ServerObject> writtenObjects)
         {
-            Console.WriteLine("CALLED INSIDE REPLICA");
+            Console.WriteLine("Called Update on Replica from Worker: " + worker_url);
             Replica.update(worker_url, writtenObjects);
         }
     }

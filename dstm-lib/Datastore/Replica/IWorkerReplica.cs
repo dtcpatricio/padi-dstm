@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Datastore
 {
-    public interface IWorkerReplica
+    internal interface IWorkerReplica
     {
         //Sends the updated server objects in transaction to replica
         void update(string worker_url, List<ServerObject> writtenObjects);

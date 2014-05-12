@@ -99,12 +99,13 @@ namespace Datastore
                 timer(10000);
                 MY_DECISION = waitParticipantsResponse();
                 evaluateMyDecision();
-
+                
                 if (MY_DECISION.Equals(TransactionDecision.COMMIT))
                 {
                     // Send an update to the replica if there is one
                     Datastore.updateReplica(TX.WRITTENOBJECTS);
                 }
+                 
             }
             else
             {

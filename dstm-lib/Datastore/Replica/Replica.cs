@@ -38,33 +38,49 @@ namespace Datastore
             }
         }
 
+
         // Update function called by the workers, receives list of server objects 
-        // TEST
+        // from a given server. If worker_url does not exist in worker_serverObjects
+        // it means that it is a new server
+
+        // TODO: Test with sucessive updates 
         internal static void update(string worker_url, List<ServerObject> updatedList)
         {
-            List<ServerObject> oldList = worker_serverObjects[worker_url];
-            int j = 0;
-            bool updated = false;
-            foreach (ServerObject updatedSO in updatedList)
+            lock (worker_serverObjects)
             {
-                foreach(ServerObject oldSO in oldList) 
+                if (!worker_serverObjects.ContainsKey(worker_url))
                 {
-                    if (updatedSO.UID.Equals(oldSO.UID))
+                    worker_serverObjects.Add(worker_url, updatedList);
+                    return;
+                }
+
+                List<ServerObject> oldList = worker_serverObjects[worker_url];
+
+                int j = 0;
+                bool updated = false;
+                foreach (ServerObject updatedSO in updatedList)
+                {
+                    foreach (ServerObject oldSO in oldList)
                     {
-                        oldList[j] = updatedSO;
-                        j = 0;
-                        updated = true;
-                        break;
+                        if (oldSO.UID.Equals(updatedSO.UID))
+                        {
+                            oldList[j] = updatedSO;
+                            j = 0;
+                            updated = true;
+                            break;
+                        }
+                        j++;
                     }
-                    j++;
+
+                    if (updated == false)
+                    {
+                        oldList.Add(updatedSO);
+                        updated = false;
+                    }
+                    j = 0;
                 }
-                if (updated == false)
-                {
-                    oldList.Add(updatedSO);
-                    updated = false;
-                }
-                j = 0;
             }
         }
+             
     }
 }
