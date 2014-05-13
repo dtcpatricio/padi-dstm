@@ -21,10 +21,11 @@ namespace MasterServer
             return servers;
         }
 
-        public void setFailedServer(string failed_url)
+        public string setFailedServer(string failed_url)
         {
             Console.WriteLine("Setting failed server : " + failed_url);
-            WorkerManager.setFailedServer(failed_url);
+            return WorkerManager.setFailedServer(failed_url);
+
         }
 
         public override object InitializeLifetimeService()

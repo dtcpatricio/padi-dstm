@@ -32,10 +32,11 @@ namespace Datastore
         private static ExecutionMode _executionMode = ExecutionMode.WORKER;
 
         public delegate void RemoteAsyncDelegate(string serverURL, List<ServerObject> updatedSO);
-        
 
-        internal static string SERVERURL
-        {
+
+        internal static string MASTER { get { return _masterURL; }}
+
+        internal static string SERVERURL { 
             get { return _serverURL; }
             set { _serverURL = value; }
         }
@@ -64,6 +65,21 @@ namespace Datastore
             TentativeTx tx = new TentativeTx(txID, clientURL);
             _tentativeTransactions.Add(txID, tx);
         }
+
+        internal static List<ServerObject> getVersionsRead(List<ServerObject> serverObjects, int uid)
+        {
+            List<ServerObject> versions = new List<ServerObject>();
+            foreach (ServerObject so in serverObjects)
+            {
+                if (so.UID == uid)
+                {
+                    versions.Add(so);
+                }
+            }
+
+            return versions;
+        }
+
         /**
          * Registers a tentative READ
          * @return VOID
@@ -75,8 +91,9 @@ namespace Datastore
             if (!_tentativeTransactions.ContainsKey(txID))
                 createTentativeTx(txID, clientURL);
 
+            TentativeTx tx = _tentativeTransactions[txID];
             // We must ensure there's always a version for txID to read
-            List<ServerObject> versions = getVersionsByUID(uid);
+            List<ServerObject> versions = getVersionsRead(tx.WRITTENOBJECTS, uid);
             versions.Sort((x, y) => x.WRITETS.CompareTo(y.WRITETS));
             versions.Reverse();
             foreach (ServerObject obj in versions)
@@ -87,19 +104,50 @@ namespace Datastore
                     return obj.VALUE;
                 }
             }
-            return -1; // it should never reach this point. Possibly a TxException should be thrown
+            //return -1; // it should never reach this point. Possibly a TxException should be thrown
+            
+            // Only comes here if it's not in written objects of this tx
+            versions = getVersionsRead(_serverObjects, uid);
+            versions.Sort((x, y) => x.WRITETS.CompareTo(y.WRITETS));
+            versions.Reverse();
+            foreach (ServerObject obj in versions)
+            {
+                if (obj.WRITETS <= txID)
+                {
+                    obj.READTS = txID;
+                    return obj.VALUE;
+                }
+            }
+            return -1; // It should never reach this point
+        
         }
 
-        private static List<ServerObject> getVersionsByUID(int uid)
+        private static List<ServerObject> getVersionsByUID(int uid, int txID)
         {
             // TODO: lazy implementation - needs to change!
+            TentativeTx tx = _tentativeTransactions[txID];
+            bool versionWritten = false;
+
             List<ServerObject> versions = new List<ServerObject>();
+            // TX.GETSERVEROBJECTS
+            foreach (ServerObject obj in tx.WRITTENOBJECTS)
+            {
+                if (obj.UID == uid)
+                {
+                    versions.Add(obj);
+                    versionWritten = true;
+                }
+            }
+            if (versionWritten)
+            {
+                return versions;
+            }
+
             foreach (ServerObject obj in _serverObjects)
             {
                 if (obj.UID == uid)
                     versions.Add(obj);
             }
-
             return versions;
         }
 
@@ -114,13 +162,13 @@ namespace Datastore
             if (!_tentativeTransactions.ContainsKey(txID))
                 createTentativeTx(txID, clientURL);
 
-            List<ServerObject> versions = getVersionsByUID(uid);
+            List<ServerObject> versions = getVersionsByUID(uid, txID);
             int earlierReadTS = versions.Max(readts => readts.READTS);
 
             if (earlierReadTS <= txID)
             {
                 ServerObject tentativeWrite = new ServerObject(uid, newVal, txID);
-                replaceValue(tentativeWrite);
+               // replaceValue(tentativeWrite);
 
                 TentativeTx tx = _tentativeTransactions[txID];
                 tx.AddObject(tentativeWrite);
@@ -133,17 +181,28 @@ namespace Datastore
             }
         }
 
-        internal static void replaceValue(ServerObject serverObject)
+        internal static void replaceValue(List<ServerObject> replaceSO)
         {
-            int i = 0;
-            foreach (ServerObject so in _serverObjects)
+            lock (_serverObjects)
             {
-                if (so.UID == serverObject.UID)
+                // criar uma cópia
+                List<ServerObject> serverObjects = new List<ServerObject>();
+                serverObjects = _serverObjects;
+
+                int i = 0;
+                foreach (ServerObject rso in replaceSO)
                 {
-                    _serverObjects[i] = serverObject;
-                    return;
+                    i = 0;
+                    foreach (ServerObject so in serverObjects)
+                    {
+
+                        if (so.UID == rso.UID)
+                        {
+                            _serverObjects[i] = rso;
+                        }
+                        i++;
+                    }
                 }
-                i++;
             }
             // Should never reach this point
             Console.WriteLine("ERROR: Datastore.replaceValue ");
@@ -158,7 +217,7 @@ namespace Datastore
             return _serverObjects.Any(x => x.UID == uid);
         }
 
-
+        // TODO: Create inside 2PC
         internal static bool createServerObject(int uid)
         {
             if(_serverObjects.Any((x => x.UID == uid && x.WRITETS == 0)))
@@ -218,6 +277,9 @@ namespace Datastore
             if(tx.COORDINATOR.MY_DECISION.Equals(TransactionDecision.ABORT))
                 return false;
 
+            replaceValue(tx.WRITTENOBJECTS);
+
+
             Console.WriteLine("MY OBJECTS ARE : ");
             foreach (ServerObject o in SERVEROBJECTS)
             {
@@ -225,8 +287,12 @@ namespace Datastore
             }
 
             // Send an update to the replica if there is one
-            Replica.updateSucessor(tx.WRITTENOBJECTS);
-            return true;
+            if (Replica.updateSucessor(tx.WRITTENOBJECTS).Equals(UpdateState.COMMIT))
+            {
+                return true;
+            }
+            
+            return false;
         }
 
         internal static void participantVoteYes(int txID, String URL)
@@ -277,7 +343,8 @@ namespace Datastore
             tx.PARTICIPANT.doCommit(txID, coordURL);
             // Send an update to the replica if there is one
             Console.WriteLine("MY OBJECTS ARE : ");
-            
+
+            replaceValue(tx.WRITTENOBJECTS);
             foreach (ServerObject o in SERVEROBJECTS)
             {
                 Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
@@ -291,6 +358,7 @@ namespace Datastore
             TentativeTx tx = _tentativeTransactions[txID];
             tx.PARTICIPANT.doAbort(txID, coordURL);
         }
+
 
         // Change the mode of execution of datastore to replica
       /*  internal static void startReplicaMode(Dictionary<int, string> availableServers)

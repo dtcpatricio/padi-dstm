@@ -137,11 +137,12 @@ namespace PADI_DSTM
                 serverURL + "DatastoreOps");
 
             bool success = datastore.createPadInt(uid);
+            
             if (success)
             {
                 Console.WriteLine("PadiDstm.CreatePadInt TRUE");
-                PadInt padint = new PadInt(uid, serverURL);
-
+                PadInt padint = new PadInt(uid, serverURL); 
+                
                 return padint;
             }
             else
@@ -212,44 +213,41 @@ namespace PADI_DSTM
             }
             catch (SocketException e)
             {
-                Console.WriteLine("INSIDE ACCESS SOCKET CATCH!!!");
-                Console.WriteLine(e.Message);
-                Console.WriteLine("TRANSACTION SHOULD ABORT!");
-
-                // Server failed. Call master and tell him that the server failed
-                // Force transaction abort ?
-                ILibraryComm master = (ILibraryComm)Activator.GetObject(
-                typeof(ILibraryComm),
-                 _master_url + "LibraryComm");
-                master.setFailedServer(serverURL);
-
-                // Server failed
-                _transaction.State = TransactionState.ABORTED;
-                PadInt padint = new PadInt(uid, "");
-                return padint;
+                manageFailedServer(serverURL, serverNumber);
+                return AccessPadInt(uid);
                 
             }
             catch (System.IO.IOException io)
             {
-                Console.WriteLine("INSIDE ACCESS IOEXCEPTION CATCH!!!");
-                // Server failed. Call master and tell him that the server failed
-                // Force transaction abort ?
-                // Server failed. Call master and tell him that the server failed
-                // Force transaction abort ?
-                ILibraryComm master = (ILibraryComm)Activator.GetObject(
-                typeof(ILibraryComm),
-                 _master_url + "LibraryComm");
-                master.setFailedServer(serverURL);
-
-                // Server failed
-                _transaction.State = TransactionState.ABORTED;
-                PadInt padint = new PadInt(uid, "");
-                return padint;
-                 
+                manageFailedServer(serverURL, serverNumber);
+                return AccessPadInt(uid);
             }
-
         }
 
+        // Returns the server url that has the requested UID objects (Sucessor)
+        public static string manageFailedServer(string failed_url, int serverNumber)
+        {
+            Console.WriteLine("INSIDE ACCESS CATCH!!!");
+            string sucessor_url;
+            
+            ILibraryComm master = (ILibraryComm)Activator.GetObject(
+            typeof(ILibraryComm), _master_url + "LibraryComm");
+            sucessor_url = master.setFailedServer(failed_url);
+
+            // Server failed
+            if (sucessor_url == null)
+            {
+                Console.WriteLine("ERROR: THERE ARE NO SERVERS THAT HAVE THE REQUESTED PADINT");
+                _transaction.State = TransactionState.ABORTED;
+            }
+
+
+            Servers.AvailableServers[serverNumber] = sucessor_url;
+            
+            return sucessor_url;
+        }
+                
+   
         public static bool Status()
         {
             return true;

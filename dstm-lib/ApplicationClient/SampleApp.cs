@@ -16,8 +16,6 @@ class SampleApp {
         Console.WriteLine("Press <Enter> and kill server with UID = 20");
         Console.ReadLine();
 
-        pi_b = PadiDstm.AccessPadInt(20);
-
         res = PadiDstm.TxCommit();
 
         Console.WriteLine("Transaction committed = " + res);
@@ -47,6 +45,19 @@ class SampleApp {
 
         Console.ReadLine();
         res = PadiDstm.TxCommit();
+        
+        Console.WriteLine("TESTE UPDATE 2PC");
+        
+        res = PadiDstm.TxBegin();
+        pi_a = PadiDstm.AccessPadInt(12);
+        pi_b = PadiDstm.AccessPadInt(20); // NOW IT SHOULD WORK BECAUSE OF CHAIN REPLICATION
+        pi_c = PadiDstm.AccessPadInt(43);
+        Console.WriteLine("a = " + pi_a.Read());
+        Console.WriteLine("b = " + pi_b.Read());
+        Console.WriteLine("c = " + pi_c.Read());
+        res = PadiDstm.TxCommit();
+
+
         Console.WriteLine("Transaction committed = " + res);
         Console.ReadLine();
     }

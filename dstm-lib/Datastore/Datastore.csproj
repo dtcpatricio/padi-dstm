@@ -65,6 +65,7 @@
     <Compile Include="Replica\MasterWorker.cs" />
     <Compile Include="Replica\Replica.cs" />
     <Compile Include="Replica\ReplicaWorker.cs" />
+    <Compile Include="Replica\UpdateState.cs" />
     <Compile Include="Replica\WorkerReplica.cs" />
     <Compile Include="ServerObject.cs" />
     <Compile Include="TentativeTx.cs" />

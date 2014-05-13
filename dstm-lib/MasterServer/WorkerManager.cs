@@ -75,11 +75,22 @@ namespace MasterServer
                     return availableServers.ElementAt(i - 1).Value;
                 }
             }
-
             // Should never reach this path
             return null;
         }
 
+        internal static string getFailedSucessor(int failed_id)
+        {
+            // Return the sucessor of the failed server
+            if (availableServers.ContainsKey(failed_id + 1))
+                return availableServers[failed_id+1];
+
+            // Return the head of the chain
+            if (availableServers.Count > 0)
+                return availableServers.ElementAt(0).Value;
+
+            return null;
+        }
 
         internal static bool isFailedServer(string url)
         {
@@ -137,8 +148,7 @@ namespace MasterServer
         }
 
         // Sets the detected url to failed
-        // Probably should be locked if concurrent clients detect server failure
-        internal static void setFailedServer(string failed_url)
+        internal static string setFailedServer(string failed_url)
         {
             lock (availableServers)
             {
@@ -154,20 +164,30 @@ namespace MasterServer
                         IMasterWorker remote_sucessor =
                                         (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
                                           failed_sucessor + "MasterWorker");
+
                         remote_sucessor.setPredecessor(failed_predecessor);
 
                         IMasterWorker remote_predecessor =
                                         (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
                                           failed_predecessor + "MasterWorker");
+                        
                         remote_predecessor.setSucessor(failed_sucessor);
-
                         remote_sucessor.substituteFailedServer(failed_url);
 
                         failedServers.Add(id, failed_url);
                         availableServers.Remove(id);
-                        return;
+
+                        return failed_sucessor;
                     }
                 }
+                // TESTAR ESTE CASO 2 CLIENTES
+                foreach (int id in failedServers.Keys)
+                {
+                    if(failedServers[id].Equals(failed_url))
+                        return getFailedSucessor(id);
+                }
+                Console.WriteLine("WorkerManager.setFailedServers IT SHOULD NOT BE HERE");
+                return null;
             }
         }
 

@@ -10,6 +10,8 @@ namespace CommonTypes
     {
         int getTxID();
         IDictionary<int, string> updateCache();
-        void setFailedServer(string failed_url);
+        
+        // returns the url of the sucessor that has the UID objects
+        string setFailedServer(string failed_url);
     }
 }

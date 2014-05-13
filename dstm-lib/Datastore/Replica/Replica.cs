@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
+using System.Net.Sockets;
 
 namespace Datastore
 {
@@ -72,21 +73,50 @@ namespace Datastore
         // from a given server. If worker_url does not exist in worker_serverObjects
         // it means that it is a new server
 
-        //Send updated transaction written objects to replica if there is one
-        internal static void updateSucessor(List<ServerObject> writtenObjects)
+        //Send updated to sucessor, if sucessor died return false -> transaction abort
+        //call master to stabalize the system
+        internal static UpdateState updateSucessor(List<ServerObject> writtenObjects)
         {
-           // try
-            //{
+            try
+            {
                 IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(
                 typeof(IWorkerReplica),
                 Replica.SUCESSOR + "WorkerReplica");
 
                 sucessor.update(Datastore.SERVERURL, writtenObjects);
-            //}
-            //catch (Exception e)
-            //{
-              //  Console.WriteLine(e.Message);
-            //}
+
+                return UpdateState.COMMIT;
+            }
+            catch (SocketException e)
+            {
+                manageFailedServer(Replica.SUCESSOR);
+                updateSucessor(writtenObjects);
+                return UpdateState.ABORT;
+            }
+            catch (System.IO.IOException io)
+            {
+                manageFailedServer(Replica.SUCESSOR);
+                updateSucessor(writtenObjects);
+                return UpdateState.ABORT;
+            }
+        }
+
+        // Manage the failure, the Master alters the sucessors of this class
+        internal static void manageFailedServer(string failed_url) 
+        {
+            Console.WriteLine("INSIDE CATCH IN DATASTORE!!!");
+            
+            string sucessor_url;
+
+            ILibraryComm master = (ILibraryComm)Activator.GetObject(
+            typeof(ILibraryComm), Datastore.MASTER + "LibraryComm");
+            sucessor_url = master.setFailedServer(failed_url);
+             
+            // Server failed
+            if (sucessor_url == null)
+                Console.WriteLine("ERROR: THERE ARE NO SERVERS THAT HAVE THE REQUESTED PADINT");
+        
+
             /*
             // Create delegate to remote method
             RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(replica.update);
