@@ -15,9 +15,9 @@ namespace Datastore
             return success;
         }
 
-        public bool createPadInt(int uid)
+        public bool createPadInt(int uid, int txID, string clientURL)
         {
-            bool success = Datastore.createServerObject(uid);
+            bool success = Datastore.createServerObject(uid, txID, clientURL);
             return success;
         }
 

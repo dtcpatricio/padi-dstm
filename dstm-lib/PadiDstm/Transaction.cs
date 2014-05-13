@@ -74,8 +74,7 @@ namespace PADI_DSTM
 
             AddValue(uid, val);
 
-            if (!accessedServers.Contains(padInt.URL))
-                accessedServers.Add(padInt.URL);
+            addAccessedServer(padInt.URL);
 
             return val;
         }
@@ -98,9 +97,8 @@ namespace PADI_DSTM
 
             remote.Write(uid, TXID, val, PadiDstm.Client_Url);
             AddValue(uid, val);
-            
-            if (!accessedServers.Contains(padInt.URL))
-                accessedServers.Add(padInt.URL);
+
+            addAccessedServer(padInt.URL);
         }
 
         // Adds or updates the value identified by the given uid
@@ -110,6 +108,12 @@ namespace PADI_DSTM
                 values[uid] = value;
             else
                 values.Add(uid, value);
+        }
+
+        internal void addAccessedServer(string url)
+        {
+            if (!accessedServers.Contains(url))
+                accessedServers.Add(url);
         }
     }
 }

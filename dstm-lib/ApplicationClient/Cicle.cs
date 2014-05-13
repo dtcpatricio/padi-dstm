@@ -7,7 +7,6 @@ using PADI_DSTM;
 
 class Cicle
 {
-    /*
     static void Main(string[] args)
     {
         bool res = false; int aborted = 0, committed = 0;
@@ -114,5 +113,4 @@ class Cicle
             PadiDstm.TxAbort();
         }
     }
-     * */
 }

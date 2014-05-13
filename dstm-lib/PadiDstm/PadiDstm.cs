@@ -129,27 +129,38 @@ namespace PADI_DSTM
             }
 
             int serverNumber = computeDatastore(uid);
-
             string serverURL = Servers.AvailableServers[serverNumber];
-
             IDatastoreOps datastore = (IDatastoreOps)Activator.GetObject(
                 typeof(IDatastoreOps),
                 serverURL + "DatastoreOps");
+          /*  try
+            {*/
+                bool success = datastore.createPadInt(uid, Transaction.TXID, Client_Url);
 
-            bool success = datastore.createPadInt(uid);
-            
-            if (success)
+                if (success)
+                {
+                    Console.WriteLine("PadiDstm.CreatePadInt TRUE");
+                    PadInt padint = new PadInt(uid, serverURL);
+                    Transaction.addAccessedServer(serverURL);
+                    return padint;
+                }
+                else
+                {
+                    //Maybe throwexception unable to create padint, uid already exists
+                    return null;
+                }
+            /*}
+            catch (SocketException)
             {
-                Console.WriteLine("PadiDstm.CreatePadInt TRUE");
-                PadInt padint = new PadInt(uid, serverURL); 
-                
-                return padint;
+                manageFailedServer(serverURL, serverNumber);
+                return AccessPadInt(uid);
+
             }
-            else
+            catch (System.IO.IOException)
             {
-                //Maybe throwexception unable to create padint, uid already exists
-                return null;
-            }
+                manageFailedServer(serverURL, serverNumber);
+                return AccessPadInt(uid);
+            }*/
         }
 
         // returning -1 when 2 datastores are alive
@@ -202,6 +213,7 @@ namespace PADI_DSTM
                 {
                     Console.WriteLine("PadiDstm.AccessPadInt TRUE");
                     PadInt padint = new PadInt(uid, serverURL);
+                    Transaction.addAccessedServer(serverURL);
                     return padint;
                 }
                 else
@@ -211,13 +223,13 @@ namespace PADI_DSTM
                     return null;
                 }
             }
-            catch (SocketException e)
+            catch (SocketException)
             {
                 manageFailedServer(serverURL, serverNumber);
                 return AccessPadInt(uid);
                 
             }
-            catch (System.IO.IOException io)
+            catch (System.IO.IOException)
             {
                 manageFailedServer(serverURL, serverNumber);
                 return AccessPadInt(uid);

@@ -60,10 +60,11 @@ namespace Datastore
          * 
          * creates a tentative transaction in the datastore server
          **/
-        internal static void createTentativeTx(int txID, string clientURL)
+        internal static TentativeTx createTentativeTx(int txID, string clientURL)
         {
             TentativeTx tx = new TentativeTx(txID, clientURL);
             _tentativeTransactions.Add(txID, tx);
+            return tx;
         }
 
         internal static List<ServerObject> getVersionsRead(List<ServerObject> serverObjects, int uid)
@@ -181,31 +182,12 @@ namespace Datastore
             }
         }
 
-        internal static void replaceValue(List<ServerObject> replaceSO)
+        internal static void addValues(List<ServerObject> serverObjects)
         {
             lock (_serverObjects)
             {
-                // criar uma cópia
-                List<ServerObject> serverObjects = new List<ServerObject>();
-                serverObjects = _serverObjects;
-
-                int i = 0;
-                foreach (ServerObject rso in replaceSO)
-                {
-                    i = 0;
-                    foreach (ServerObject so in serverObjects)
-                    {
-
-                        if (so.UID == rso.UID)
-                        {
-                            _serverObjects[i] = rso;
-                        }
-                        i++;
-                    }
-                }
+                _serverObjects.AddRange(serverObjects);
             }
-            // Should never reach this point
-            Console.WriteLine("ERROR: Datastore.replaceValue ");
         }
 
 
@@ -218,14 +200,23 @@ namespace Datastore
         }
 
         // TODO: Create inside 2PC
-        internal static bool createServerObject(int uid)
+        internal static bool createServerObject(int uid, int txID, string clientURL)
         {
             if(_serverObjects.Any((x => x.UID == uid && x.WRITETS == 0)))
                 return false;
 
+            TentativeTx tx;
+            if (!_tentativeTransactions.ContainsKey(txID))
+            {
+                tx = createTentativeTx(txID, clientURL);
+            }
+            else
+            {
+                tx = _tentativeTransactions[txID];
+            }
+
             ServerObject obj = new ServerObject(uid);
-            _serverObjects.Add(obj);
-            Replica.updateSucessor(new List<ServerObject> { obj });
+            tx.AddObject(obj);
             return true;
         }
 
@@ -241,21 +232,6 @@ namespace Datastore
             master.IAmAlive(SERVERURL);
 
         }
-
-        // Warning: Carefull with delays between sending "I Am Alive" e Master timer to check Heartbeat
-       /* internal static void timerAlive()
-        {
-            // Create a timer with a twelve second interval.
-            _timer = new Timer(12000);
-
-            // Hook up the event handler for the Elapsed event.
-            _timer.Elapsed += new ElapsedEventHandler(sendIAmAlive);
-
-            // Only raise the event the first time Interval elapses.
-            _timer.AutoReset = true;
-            _timer.Enabled = true;
-        }
-        */
 
         /**********************************************************************
          * 2PC protocol section
@@ -277,7 +253,7 @@ namespace Datastore
             if(tx.COORDINATOR.MY_DECISION.Equals(TransactionDecision.ABORT))
                 return false;
 
-            replaceValue(tx.WRITTENOBJECTS);
+            addValues(tx.WRITTENOBJECTS);
 
 
             Console.WriteLine("MY OBJECTS ARE : ");
@@ -344,7 +320,9 @@ namespace Datastore
             // Send an update to the replica if there is one
             Console.WriteLine("MY OBJECTS ARE : ");
 
-            replaceValue(tx.WRITTENOBJECTS);
+            //replaceValue(tx.WRITTENOBJECTS);
+            addValues(tx.WRITTENOBJECTS);
+
             foreach (ServerObject o in SERVEROBJECTS)
             {
                 Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
