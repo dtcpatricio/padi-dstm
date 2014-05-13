@@ -50,7 +50,6 @@ namespace Datastore
         internal static List<ServerObject> SERVEROBJECTS
         {
             get { return _serverObjects; }
-            set { _serverObjects = value; }
         }
 
         /**

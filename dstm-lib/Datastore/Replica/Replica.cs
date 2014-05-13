@@ -38,35 +38,6 @@ namespace Datastore
         {
             get { return worker_serverObjects; }
         }
-        /*  internal static void ChangeToReplica(Dictionary<int, string> availableServers)
-          {
-              Datastore.startReplicaMode(availableServers);         
-          }
-          */
-        //TODO:  Substitute the datasore list of server objects with worker_serverObjects[id]
-        internal static void changeToWorker(int id)
-        {
-            Datastore.SERVEROBJECTS = worker_serverObjects.ElementAt(id).Value;
-
-            Console.WriteLine("SO LENGTH = " + worker_serverObjects.ElementAt(id).Value.Count);
-
-            foreach (ServerObject s in worker_serverObjects.ElementAt(id).Value)
-            {
-                Console.WriteLine("UID = " + s.UID + " VALUE= " + s.VALUE);
-            }
-
-        }
-
-        // Fetch the data from the servers and notify them that I am the Replica 
-        /*   internal static void NotifyAllWorkers(Dictionary<int, string> availableServers)
-           {
-               foreach (int id in availableServers.Keys)
-               {
-                   IReplicaWorker worker = (IReplicaWorker)Activator.GetObject(
-                       typeof(IReplicaWorker), availableServers[id] + "ReplicaWorker");
-                   worker_serverObjects[availableServers[id]] = worker.fetchData(Datastore.SERVERURL);
-               }
-           }*/
 
 
         // Update function called by the workers, receives list of server objects 
@@ -87,13 +58,13 @@ namespace Datastore
 
                 return UpdateState.COMMIT;
             }
-            catch (SocketException e)
+            catch (SocketException)
             {
                 manageFailedServer(Replica.SUCESSOR);
                 updateSucessor(writtenObjects);
                 return UpdateState.ABORT;
             }
-            catch (System.IO.IOException io)
+            catch (System.IO.IOException)
             {
                 manageFailedServer(Replica.SUCESSOR);
                 updateSucessor(writtenObjects);
