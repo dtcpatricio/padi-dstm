@@ -14,5 +14,9 @@ namespace CommonTypes
         */
         // Sets whos my sucessor and whos sending me updates
         void setReplica(string sucessor, string predecessor);
+        void setSucessor(string sucessor);
+        void setPredecessor(string predecessor);
+
+        void substituteFailedServer(string failed_server);
     }
 }

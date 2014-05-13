@@ -12,8 +12,12 @@ class SampleApp {
         PadInt pi_a = PadiDstm.CreatePadInt(12);
         PadInt pi_b = PadiDstm.CreatePadInt(20);
         PadInt pi_c = PadiDstm.CreatePadInt(43);
-        
+
+        Console.WriteLine("Press <Enter> and kill server with UID = 20");
         Console.ReadLine();
+
+        pi_b = PadiDstm.AccessPadInt(20);
+
         res = PadiDstm.TxCommit();
 
         Console.WriteLine("Transaction committed = " + res);
@@ -24,7 +28,7 @@ class SampleApp {
         res = PadiDstm.TxBegin();
         Console.WriteLine("Transaction = " + res);
         pi_a = PadiDstm.AccessPadInt(12);
-        pi_b = PadiDstm.AccessPadInt(20);
+        pi_b = PadiDstm.AccessPadInt(20); // NOW IT SHOULD WORK BECAUSE OF CHAIN REPLICATION
         pi_c = PadiDstm.AccessPadInt(43);
         pi_a.Write(36);
         pi_b.Write(37);

@@ -16,6 +16,5 @@ namespace MasterServer
             return ++nextTxID;
         }
 
-        
     }
 }

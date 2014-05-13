@@ -93,10 +93,6 @@ namespace Datastore
 
             writePermanentLog();
             endTimer();
-
-            // Send an update to the replica if there is one
-            // Participants written objects
-            Replica.updateSucessor(TX.WRITTENOBJECTS);
         }
 
         // Only for participants

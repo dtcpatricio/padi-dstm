@@ -10,5 +10,6 @@ namespace CommonTypes
     {
         int getTxID();
         IDictionary<int, string> updateCache();
+        void setFailedServer(string failed_url);
     }
 }

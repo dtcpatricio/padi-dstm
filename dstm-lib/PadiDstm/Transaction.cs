@@ -13,7 +13,10 @@ namespace PADI_DSTM
     public class Transaction
     {
         private int _txID;
-        internal TransactionState State { get; private set; }
+
+        // removed private set from State because of padi-dstm
+        internal TransactionState State { get; set; }
+        
         private TcpChannel channel;
 
         // maps padint uids with the values
@@ -23,6 +26,7 @@ namespace PADI_DSTM
         private List<string> accessedServers = new List<string>();
 
         internal int TXID { get { return _txID; } }
+
 
         // Returns the dictionary of all the values (uid, value) kept in the current transaction
         internal Dictionary<int, int> GetValues { get { return this.values; } }
@@ -49,6 +53,13 @@ namespace PADI_DSTM
 
         internal int Read(PadInt padInt)
         {
+            if (State.Equals(TransactionState.ABORTED))
+            {
+                // Some server failed
+                Console.WriteLine("Trying to access padint uid=" + padInt.UID + " denied because of server failure");
+                return -1;
+            }
+
             int val;
             
             string remotePadIntURL = padInt.URL + "RemotePadInt";
@@ -71,6 +82,13 @@ namespace PADI_DSTM
 
         internal void Write(PadInt padInt, int val)
         {
+            if (State.Equals(TransactionState.ABORTED))
+            {
+                // Some server failed
+                Console.WriteLine("Trying to write uid=" + padInt.UID + " denied because of server failure");
+                return;
+            }
+
            string remotePadIntURL = padInt.URL + "RemotePadInt";
             int uid = padInt.UID;
 

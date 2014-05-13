@@ -30,5 +30,41 @@ namespace Datastore
             Console.WriteLine("NOW MY SUCESSOR IS = " + sucessor + " PREDECESSOR IS = " + predecessor);
             Replica.setReplica(sucessor, predecessor);
         }
+
+        // The worker has a new sucessor
+        public void setSucessor(string sucessor)
+        {
+            Console.WriteLine("AFTER SERVER FAILED MY SUCESSOR IS = " + sucessor);
+            Replica.SUCESSOR = sucessor;
+        }
+
+        // The worker has a new sucessor
+        public void setPredecessor(string predecessor)
+        {
+            Console.WriteLine("AFTER SERVER FAILED MY PREDECESSOR IS = " + predecessor);
+            Replica.PREDECESSOR = predecessor;
+        }
+
+        //TODO: Start receiving requests from the failed server
+        public void substituteFailedServer(string failed_server)
+        {
+            lock (Datastore.SERVEROBJECTS)
+            {
+                List<ServerObject> replaceList = Replica.WORKERSERVEROBJECTS[failed_server];
+                foreach (ServerObject so in replaceList)
+                {
+                    Console.WriteLine("Adding server object from failed server with uid= " + so.UID);
+                    Datastore.SERVEROBJECTS.Add(so);
+                }
+
+                Console.WriteLine("Printing worker server objects:");
+                foreach (ServerObject o in Datastore.SERVEROBJECTS)
+                {
+                    Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
+                }
+
+            }
+
+        }
     }
 }

@@ -223,6 +223,9 @@ namespace Datastore
             {
                 Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
             }
+
+            // Send an update to the replica if there is one
+            Replica.updateSucessor(tx.WRITTENOBJECTS);
             return true;
         }
 
@@ -272,6 +275,15 @@ namespace Datastore
         {
             TentativeTx tx = _tentativeTransactions[txID];
             tx.PARTICIPANT.doCommit(txID, coordURL);
+            // Send an update to the replica if there is one
+            Console.WriteLine("MY OBJECTS ARE : ");
+            
+            foreach (ServerObject o in SERVEROBJECTS)
+            {
+                Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
+            }
+
+            Replica.updateSucessor(tx.WRITTENOBJECTS);
         }
 
         internal static void doAbort(int txID, string coordURL)
@@ -308,6 +320,8 @@ namespace Datastore
                 Console.WriteLine("-- CALLING REPLICA TO UPDATE --");*/
          /*   }
         }*/
+
+
 
     }
 }

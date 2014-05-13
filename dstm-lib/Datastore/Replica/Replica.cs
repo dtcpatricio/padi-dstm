@@ -33,6 +33,10 @@ namespace Datastore
             set { _predecessor = value; }
         }
 
+        internal static Dictionary<string, List<ServerObject>> WORKERSERVEROBJECTS
+        {
+            get { return worker_serverObjects; }
+        }
         /*  internal static void ChangeToReplica(Dictionary<int, string> availableServers)
           {
               Datastore.startReplicaMode(availableServers);         
@@ -71,12 +75,18 @@ namespace Datastore
         //Send updated transaction written objects to replica if there is one
         internal static void updateSucessor(List<ServerObject> writtenObjects)
         {
-            IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(
-            typeof(IWorkerReplica),
-            Replica.SUCESSOR + "WorkerReplica");
+           // try
+            //{
+                IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(
+                typeof(IWorkerReplica),
+                Replica.SUCESSOR + "WorkerReplica");
 
-            sucessor.update(Datastore.SERVERURL, writtenObjects);
-
+                sucessor.update(Datastore.SERVERURL, writtenObjects);
+            //}
+            //catch (Exception e)
+            //{
+              //  Console.WriteLine(e.Message);
+            //}
             /*
             // Create delegate to remote method
             RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(replica.update);
@@ -91,11 +101,15 @@ namespace Datastore
         {
             lock (worker_serverObjects)
             {
-               
-
                 if (!worker_serverObjects.ContainsKey(predecessor))
                 {
                     worker_serverObjects.Add(predecessor, updatedList);
+
+                    foreach (ServerObject so in worker_serverObjects[predecessor])
+                    {
+                        Console.WriteLine("\t" + "UPDATING UID=" + so.UID + " VALUE=" + so.VALUE);
+                    }
+
                     return;
                 }
 

@@ -25,8 +25,6 @@ namespace MasterServer
         static private Dictionary<int, string> failedServers = new Dictionary<int, string>();
 
 
-        static private String _replicaURL = null;
-
         /*
         static public void printAvailableWorkers()
         {
@@ -37,6 +35,11 @@ namespace MasterServer
             }
         }
         */
+
+        internal static IDictionary<int, string> getAvailableServers()
+        {
+            return availableServers;
+        }
 
         // Returns the id sucessor in replication chain
         internal static string getWorkerSucessor(int id)
@@ -67,7 +70,7 @@ namespace MasterServer
                 {
                     if (i == 0)
                     {
-                        return availableServers.ElementAt(availableServers.Count-1).Value;
+                        return availableServers.ElementAt(availableServers.Count - 1).Value;
                     }
                     return availableServers.ElementAt(i - 1).Value;
                 }
@@ -75,18 +78,6 @@ namespace MasterServer
 
             // Should never reach this path
             return null;
-        }
-         
-
-        internal static String REPLICAURL
-        {
-            get { return _replicaURL; }
-            set { _replicaURL = value; }
-        }
-
-        internal static IDictionary<int, string> getAvailableServers()
-        {
-            return availableServers;
         }
 
 
@@ -100,20 +91,11 @@ namespace MasterServer
             return false;
         }
 
-        // Verifies if the replica has been createad
-        internal static bool ReplicaExists()
-        {
-            if (REPLICAURL != null)
-                return true;
-            return false;
-        }
 
         // Returns the total number of servers incl94e0uding the replica and failed servers
         internal static int totalServers()
         {
             int total = 0;
-            if (REPLICAURL != null)
-                total++;
             return availableServers.Count + failedServers.Count + total;
         }
 
@@ -136,15 +118,15 @@ namespace MasterServer
         }
 
         // Send a a setAsReplica for the url worker
-     /*   internal static void CreateReplica(string url)
-        {
+        /*   internal static void CreateReplica(string url)
+           {
 
-            REPLICAURL = url;
-            IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
-                url + "MasterWorker");
-            remote.setAsReplica(availableServers);
+               REPLICAURL = url;
+               IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                   url + "MasterWorker");
+               remote.setAsReplica(availableServers);
 
-        }*/
+           }*/
 
         // Set the sucessor replica of the worker
         internal static void SetReplica(string worker_url, string sucessor, string predecessor)
@@ -155,34 +137,47 @@ namespace MasterServer
         }
 
         // Sets the detected url to failed
-       /* internal static void setFailedServer(string url)
+        // Probably should be locked if concurrent clients detect server failure
+        internal static void setFailedServer(string failed_url)
         {
-            if (REPLICAURL != null && REPLICAURL.Equals(url))
+            lock (availableServers)
             {
-                REPLICAURL = null;
-                return;
-            }
-            foreach (int id in availableServers.Keys)
-            {
-                if (availableServers[id].Equals(url))
+                foreach (int id in availableServers.Keys)
                 {
-                    failedServers.Add(id, url);
-                    availableServers.Remove(id);
+                    if (availableServers[id].Equals(failed_url))
+                    {
+                        // Get the sucessor of failed server and
+                        // set the predecessor's sucessor to this server
+                        string failed_sucessor = getWorkerSucessor(id);
+                        string failed_predecessor = getWorkerPredecessor(id);
 
-                    //TODO: Tell replica to replace this failed server
-                    setWorker(id);
-                    return;
+                        IMasterWorker remote_sucessor =
+                                        (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                                          failed_sucessor + "MasterWorker");
+                        remote_sucessor.setPredecessor(failed_predecessor);
+
+                        IMasterWorker remote_predecessor =
+                                        (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                                          failed_predecessor + "MasterWorker");
+                        remote_predecessor.setSucessor(failed_sucessor);
+
+                        remote_sucessor.substituteFailedServer(failed_url);
+
+                        failedServers.Add(id, failed_url);
+                        availableServers.Remove(id);
+                        return;
+                    }
                 }
             }
-        }*/
-
-       /* internal static void setWorker(int id)
-        {
-            IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
-                    REPLICAURL + "MasterWorker");
-
-            remote.setWorker(id);
         }
-        */
+
+        /* internal static void setWorker(int id)
+         {
+             IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                     REPLICAURL + "MasterWorker");
+
+             remote.setWorker(id);
+         }
+         */
     }
 }
