@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
+using System.Threading;
 
 
 namespace Datastore
@@ -15,14 +16,14 @@ namespace Datastore
         {
             while (Datastore.STATE.Equals(State.FREEZE))
             {
-                Console.WriteLine("SERVER FAILED!");
+                Console.WriteLine("SERVER FREEZED!");
                 Datastore.Freeze();
             }
 
-            if (Datastore.STATE.Equals(State.FAILED)) { 
-            
-                //throw new ServerFailedException();
-                return -1;
+            if (Datastore.STATE.Equals(State.FAILED)) {
+
+                //throw new TxException("Failed Server", this);
+                return Int32.MinValue;
             }
 
 

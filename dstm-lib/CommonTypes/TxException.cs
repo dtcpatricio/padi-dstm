@@ -9,26 +9,30 @@ namespace CommonTypes
     [Serializable]
     public class TxException : ApplicationException
     {
-        private string _msg;
+        public string msg;
+        public IRemotePadInt remote;
 
-        public string GETMESSAGE { get { return _msg; } }
-
-        public TxException(string msg)
+        public TxException(string msg, IRemotePadInt remote)
         {
-            _msg = msg;
+            this.msg = msg;
+            this.remote = remote;
         }
 
         public TxException(System.Runtime.Serialization.SerializationInfo info,
         System.Runtime.Serialization.StreamingContext context)
             : base(info, context)
         {
-            _msg = info.GetString("_msg");
+            msg = info.GetString("msg");
+            remote = (IRemotePadInt)info.GetValue("remote", typeof(IRemotePadInt));
         }
+
+
 
         public override void GetObjectData(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
         {
             base.GetObjectData(info, context);
-            info.AddValue("_msg", _msg);
+            info.AddValue("msg", msg);
+            info.AddValue("remote", remote);
         }
     }
 }

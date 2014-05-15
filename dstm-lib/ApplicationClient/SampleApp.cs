@@ -4,7 +4,16 @@ using PADI_DSTM;
 class SampleApp {
   
     static void Main(string[] args) {
+
         bool res;
+        String recover = Console.ReadLine();
+        if (recover.Equals("R"))
+        {
+            res = PadiDstm.Recover("tcp://localhost:8088/");
+            Console.ReadLine();
+            return;
+        }
+       
 
         PadiDstm.Init();
         res = PadiDstm.TxBegin();
@@ -42,7 +51,7 @@ class SampleApp {
         // The following 3 lines assume we have 2 servers: one at port 2001 and another at port 2002
       
       //res = PadiDstm.Freeze("tcp://localhost:2001/Server");
-        res = PadiDstm.Recover("tcp://localhost:2001/Server");
+      //  res = PadiDstm.Recover("tcp://localhost:2001/Server");
         res = PadiDstm.Fail("tcp://localhost:8088/");
 
         Console.ReadLine();

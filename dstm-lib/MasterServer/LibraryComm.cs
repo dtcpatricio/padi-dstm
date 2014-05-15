@@ -36,8 +36,6 @@ namespace MasterServer
             return WorkerManager.freeze(url);
         }
 
-        
-
         public override object InitializeLifetimeService()
         {
             return null;

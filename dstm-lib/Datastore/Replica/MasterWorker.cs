@@ -53,6 +53,16 @@ namespace Datastore
                 if (Replica.WORKERSERVEROBJECTS.ContainsKey(failed_server))
                 {
                     List<ServerObject> replaceList = Replica.WORKERSERVEROBJECTS[failed_server];
+
+                    //Send replaceList to sucessor, the data must always be in two place
+                    IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(
+                              typeof(IWorkerReplica),
+                    Replica.SUCESSOR + "WorkerReplica");
+
+                    sucessor.update(Datastore.SERVERURL, replaceList);
+
+                    //void update(string worker_url, List<ServerObject> writtenObjects);
+
                     foreach (ServerObject so in replaceList)
                     {
                         Console.WriteLine("Adding server object from failed server with uid= " + so.UID);

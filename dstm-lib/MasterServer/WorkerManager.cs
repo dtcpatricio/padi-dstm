@@ -27,6 +27,8 @@ namespace MasterServer
         // List of freezed workers
         static private Dictionary<int, string> freezedServers = new Dictionary<int, string>();
 
+        
+
         /*
         static public void printAvailableWorkers()
         {
@@ -43,43 +45,38 @@ namespace MasterServer
             return availableServers;
         }
 
+        // Returns the id predecessor in replication chain
+        internal static int getAvailableID(string url)
+        {
+            int id = availableServers.FirstOrDefault(x => x.Value.Equals(url)).Key;
+
+            return id;
+        }
+
+        internal static int getFreezeID(string url)
+        {
+            int id = freezedServers.FirstOrDefault(x => x.Value.Equals(url)).Key;
+
+            return id;
+
+        }
         // Returns the id sucessor in replication chain
         internal static string getWorkerSucessor(int id)
         {
-            for (int i = 0; i < availableServers.Count; i++)
-            {
-                if (availableServers.ElementAt(i).Key == id)
-                {
-                    if (i + 1 == availableServers.Count)
-                    {
-                        return availableServers.ElementAt(0).Value;
-                    }
-                    return availableServers.ElementAt(i + 1).Value;
-                }
-            }
+            if (id == availableServers.Count)
+                return availableServers[0];
 
-            // Should never reach this path
-            return null;
+            return availableServers[id + 1];
         }
 
 
         // Returns the id predecessor in replication chain
         internal static string getWorkerPredecessor(int id)
         {
-            for (int i = 0; i < availableServers.Count; i++)
-            {
-                if (availableServers.ElementAt(i).Key == id)
-                {
-                    if (i == 0)
-                    {
-                        return availableServers.ElementAt(availableServers.Count - 1).Value;
-                    }
-                    return availableServers.ElementAt(i - 1).Value;
-                }
-            }
-            // Should never reach this path
-            return null;
-        }
+            if (id == 0)
+                return availableServers[availableServers.Count - 1];
+            return availableServers[id - 1];
+        }         
 
         internal static string getFailedSucessor(int failed_id)
         {
@@ -106,11 +103,9 @@ namespace MasterServer
 
         internal static bool isFreezedServer(string url)
         {
-            foreach (int id in freezedServers.Keys)
-            {
-                if (freezedServers[id].Equals(url))
-                    return true;
-            }
+            if (freezedServers.ContainsValue(url))
+                return true;
+
             return false;
         }
 
@@ -121,6 +116,15 @@ namespace MasterServer
 
             IMasterWorker worker = (IMasterWorker)Activator.GetObject(
                 typeof(IMasterWorker), url + "MasterWorker");
+
+            int id = getAvailableID(url);
+            int sucessorID = id + 1;
+            if (sucessorID >= availableServers.Count)
+                sucessorID = 0;
+
+            freezedServers.Add(id, url);
+            availableServers[id] = availableServers[sucessorID];
+            
             worker.freeze();
 
             return true;
@@ -128,7 +132,16 @@ namespace MasterServer
 
         internal static bool recover(string url)
         {
-            return true;
+            if (isFailedServer(url))
+                return true;
+
+            if (isFreezedServer(url))
+            {
+                int freeze_id = getFreezeID(url);
+                availableServers[freeze_id] = url;
+                return true;
+            }
+            return false;
         }
 
         // Returns the total number of servers incl94e0uding the replica and failed servers
@@ -200,6 +213,7 @@ namespace MasterServer
                                           failed_predecessor + "MasterWorker");
                         
                         remote_predecessor.setSucessor(failed_sucessor);
+
                         remote_sucessor.substituteFailedServer(failed_url);
 
                         failedServers.Add(id, failed_url);

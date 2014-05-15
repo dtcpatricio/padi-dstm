@@ -117,7 +117,7 @@ namespace PADI_DSTM
                 int value = del.EndInvoke(ar);
 
                 //In case the 
-                if (value == -1)
+                if (value == Int32.MinValue)
                 {
                     State = TransactionState.ABORTED;
                     freeze_lock[(int)uid] = true;
@@ -152,8 +152,14 @@ namespace PADI_DSTM
             ReadAsyncDelegate RemoteDel = new ReadAsyncDelegate(remote.Read);
             AsyncCallback RemoteCallback = new AsyncCallback(ReadAsyncCallBack);
 
-            IAsyncResult RemAr = RemoteDel.BeginInvoke(uid, TXID, PadiDstm.Client_Url, RemoteCallback, uid);
-
+            try
+            {
+                IAsyncResult RemAr = RemoteDel.BeginInvoke(uid, TXID, PadiDstm.Client_Url, RemoteCallback, uid);
+            }
+            catch (TxException t)
+            {
+                Console.WriteLine("TXEXCEPTION" + t.msg);
+            }
             // call the RemotePadInt to get the value
             /*   val = remote.Read(uid, TXID, PadiDstm.Client_Url);
                AddValue(uid, val);
@@ -164,7 +170,7 @@ namespace PADI_DSTM
 
             timerAlive(padInt.URL);
 
-            while (!freeze_lock[uid]) { Thread.Sleep(10); }
+            while (!freeze_lock[uid]) { Thread.Sleep(250); }
 
             resetTimer();
 

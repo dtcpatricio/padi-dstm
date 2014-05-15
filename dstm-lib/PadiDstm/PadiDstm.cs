@@ -301,7 +301,10 @@ namespace PADI_DSTM
 
         public static bool Recover(string url)
         {
-            return true;
+            ILibraryComm master = (ILibraryComm)Activator.GetObject(
+           typeof(ILibraryComm), _master_url + "LibraryComm");
+
+            return master.recover(url);
         }
     }
 }
