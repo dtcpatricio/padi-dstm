@@ -18,15 +18,15 @@ namespace Datastore
 
             string masterURL = "tcp://localhost:8086/";
             string datastoreURL = "tcp://localhost:" + port + "/";
-            
+
             // register the TCP channel
             TcpChannel channel = new TcpChannel(Convert.ToInt32(port));
-            
+
             ChannelServices.RegisterChannel(channel, true);
 
-            
             Datastore.SERVERURL = datastoreURL;
 
+            Datastore.STATE = State.NORMAL;
 
             // register runtime services:
             // - RemotePadInt
@@ -43,7 +43,7 @@ namespace Datastore
                 WellKnownObjectMode.SingleCall);
             System.Console.WriteLine("Registered DatastoreOps on tcp://localhost:" + port + "/DatastoreOps");
 
-            
+
             // - MasterWorker
             RemotingConfiguration.RegisterWellKnownServiceType(
                 typeof(MasterWorker),

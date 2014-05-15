@@ -7,6 +7,11 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using CommonTypes;
+using System.Net.Sockets;
+using System.Runtime.Remoting.Messaging;
+using System.Threading;
+using System.Timers;
+
 
 namespace PADI_DSTM
 {
@@ -16,7 +21,7 @@ namespace PADI_DSTM
 
         // removed private set from State because of padi-dstm
         internal TransactionState State { get; set; }
-        
+
         private TcpChannel channel;
 
         // maps padint uids with the values
@@ -26,6 +31,17 @@ namespace PADI_DSTM
         private List<string> accessedServers = new List<string>();
 
         internal int TXID { get { return _txID; } }
+
+        // UID has a temporary lock
+        internal Dictionary<int, bool> freeze_lock = new Dictionary<int, bool>();
+
+        private const int TIMETOFAILURE = 15000;
+
+        private System.Timers.Timer _timer;
+
+        public delegate int ReadAsyncDelegate(int uid, int txID, string url);
+
+        // Timer for remote operations, detect freeze, recover and server failures
 
 
         // Returns the dictionary of all the values (uid, value) kept in the current transaction
@@ -43,11 +59,74 @@ namespace PADI_DSTM
                 PadiDstm.Master_Url + "LibraryComm");
             _txID = master.getTxID();
 
-
             // placeholder debug message
             Console.WriteLine("Started new transaction with id : " + _txID);
             // set the state of the transaction to ACTIVE
             State = TransactionState.ACTIVE;
+        }
+
+        // TODO: Detect failure if worker fails to reply
+        internal void timerAlive(string server_url)
+        {
+            // Create a timer with a TIMETOFAILURE interval.
+            _timer = new System.Timers.Timer(TIMETOFAILURE);
+
+            // Hook up the event handler for the Elapsed event.
+            _timer.Elapsed += (source, e) => onTimeFail(source, e, server_url);
+
+            // Only raise the event the first time Interval elapses.
+            _timer.AutoReset = false;
+            _timer.Enabled = true;
+        }
+
+        // Server has not recovered
+        // Tell Master to kill it (with fire)
+        internal void onTimeFail(object source, ElapsedEventArgs e, string server_url)
+        {
+            Console.WriteLine("Server " + server_url + " Died!");
+            _timer.Enabled = false;
+            _timer.AutoReset = false;
+
+            IDatastoreOps datastore = (IDatastoreOps)Activator.GetObject(
+                typeof(IDatastoreOps), server_url + "DatastoreOps");
+
+            datastore.Fail();
+
+            State = TransactionState.ABORTED;
+
+            ILibraryComm master = (ILibraryComm)Activator.GetObject(
+                        typeof(ILibraryComm), PadiDstm.Master_Url + "LibraryComm");
+
+            master.setFailedServer(server_url);
+        }
+
+        internal void resetTimer()
+        {
+            _timer.Enabled = false;
+            _timer.AutoReset = false;
+        }
+
+        // This is the call that the AsyncCallBack delegate will reference.
+        public void ReadAsyncCallBack(IAsyncResult ar)
+        {
+            lock (this)
+            {
+                ReadAsyncDelegate del = (ReadAsyncDelegate)((AsyncResult)ar).AsyncDelegate;
+                Object uid = ar.AsyncState;
+
+                int value = del.EndInvoke(ar);
+
+                //In case the 
+                if (value == -1)
+                {
+                    State = TransactionState.ABORTED;
+                    freeze_lock[(int)uid] = true;
+                    return;
+                }
+                AddValue((int)uid, value);
+
+                freeze_lock[(int)uid] = true;
+            }
         }
 
 
@@ -60,23 +139,40 @@ namespace PADI_DSTM
                 return -1;
             }
 
-            int val;
-            
             string remotePadIntURL = padInt.URL + "RemotePadInt";
             int uid = padInt.UID;
 
+            freeze_lock.Add(uid, false);
+
+            //   int val;
+
             IRemotePadInt remote = (IRemotePadInt)Activator.GetObject(
-                typeof(IRemotePadInt),
-                remotePadIntURL);
+                typeof(IRemotePadInt), remotePadIntURL);
+
+            ReadAsyncDelegate RemoteDel = new ReadAsyncDelegate(remote.Read);
+            AsyncCallback RemoteCallback = new AsyncCallback(ReadAsyncCallBack);
+
+            IAsyncResult RemAr = RemoteDel.BeginInvoke(uid, TXID, PadiDstm.Client_Url, RemoteCallback, uid);
 
             // call the RemotePadInt to get the value
-            val = remote.Read(uid, TXID, PadiDstm.Client_Url);
+            /*   val = remote.Read(uid, TXID, PadiDstm.Client_Url);
+               AddValue(uid, val);
 
-            AddValue(uid, val);
+               addAccessedServer(padInt.URL);
+               return val;*/
 
-            addAccessedServer(padInt.URL);
 
-            return val;
+            timerAlive(padInt.URL);
+
+            while (!freeze_lock[uid]) { Thread.Sleep(10); }
+
+            resetTimer();
+
+            lock (freeze_lock) { freeze_lock.Remove(uid); }
+
+            return values[uid];
+
+
         }
 
         internal void Write(PadInt padInt, int val)
@@ -84,20 +180,18 @@ namespace PADI_DSTM
             if (State.Equals(TransactionState.ABORTED))
             {
                 // Some server failed
-                Console.WriteLine("Trying to write uid=" + padInt.UID + " denied because of server failure");
+                Console.WriteLine("Write padint UID= " + padInt.UID + "denied because of server failer");
                 return;
             }
 
-           string remotePadIntURL = padInt.URL + "RemotePadInt";
+            string remotePadIntURL = padInt.URL + "RemotePadInt";
             int uid = padInt.UID;
 
             IRemotePadInt remote = (IRemotePadInt)Activator.GetObject(
-                typeof(IRemotePadInt),
-                remotePadIntURL);
+                typeof(IRemotePadInt), remotePadIntURL);
 
             remote.Write(uid, TXID, val, PadiDstm.Client_Url);
             AddValue(uid, val);
-
             addAccessedServer(padInt.URL);
         }
 

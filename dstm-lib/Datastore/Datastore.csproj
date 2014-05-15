@@ -59,7 +59,7 @@
     <Compile Include="RemotePadInt.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Replica\ExecutionMode.cs" />
+    <Compile Include="Replica\State.cs" />
     <Compile Include="Replica\IReplicaWorker.cs" />
     <Compile Include="Replica\IWorkerReplica.cs" />
     <Compile Include="Replica\MasterWorker.cs" />

@@ -140,11 +140,11 @@ namespace Datastore
                     j = 0;
                 }
             }
-
+            /*
             foreach (ServerObject so in worker_serverObjects[predecessor])
             {
                 Console.WriteLine("\t" + "UPDATING UID=" + so.UID + " VALUE=" + so.VALUE);
-            }
+            }*/
         }
 
         //TODO: Set sucessor

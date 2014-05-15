@@ -11,5 +11,7 @@ namespace CommonTypes
         bool accessPadInt(int uid);
         bool createPadInt(int uid, int txID, string clientURL);
         bool commit(int txID, List<string> participants);
+
+        void Fail();
     }
 }

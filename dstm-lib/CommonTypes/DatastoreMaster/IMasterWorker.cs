@@ -18,5 +18,7 @@ namespace CommonTypes
         void setPredecessor(string predecessor);
 
         void substituteFailedServer(string failed_server);
+
+        void freeze();
     }
 }

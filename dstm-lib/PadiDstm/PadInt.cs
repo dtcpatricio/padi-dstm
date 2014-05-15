@@ -27,14 +27,29 @@ namespace PADI_DSTM
 
         public int Read()
         {
-            _value = PadiDstm.Transaction.Read(this);
-            return _value;
+            try
+            {
+                _value = PadiDstm.Transaction.Read(this);
+                return _value;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Catch CALLING WRITE! " + e.Message);
+                return -1;
+            }
         }
 
         public void Write(int val)
         {
-            PadiDstm.Transaction.Write(this, val);
-            return;
+            try
+            {
+                PadiDstm.Transaction.Write(this, val);
+                return;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Catch CALLING WRITE!");
+            }
         }
     }
 }

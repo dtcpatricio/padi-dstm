@@ -76,10 +76,8 @@ namespace PADI_DSTM
 
             if (Transaction.ACCESSEDSERVERS.Count > 0)
             {
-
                 //TODO: Check if any of the padints is NULL
                 // if so the transaction must abort because some server failed
-
                 bool success = false;
 
                 List<string> participants = Transaction.ACCESSEDSERVERS;
@@ -133,8 +131,8 @@ namespace PADI_DSTM
             IDatastoreOps datastore = (IDatastoreOps)Activator.GetObject(
                 typeof(IDatastoreOps),
                 serverURL + "DatastoreOps");
-          /*  try
-            {*/
+            try
+            {
                 bool success = datastore.createPadInt(uid, Transaction.TXID, Client_Url);
 
                 if (success)
@@ -149,7 +147,7 @@ namespace PADI_DSTM
                     //Maybe throwexception unable to create padint, uid already exists
                     return null;
                 }
-            /*}
+            }
             catch (SocketException)
             {
                 manageFailedServer(serverURL, serverNumber);
@@ -160,7 +158,12 @@ namespace PADI_DSTM
             {
                 manageFailedServer(serverURL, serverNumber);
                 return AccessPadInt(uid);
-            }*/
+            }
+            catch (ServerException)
+            {
+                manageFailedServer(serverURL, serverNumber);
+                return AccessPadInt(uid);
+            }
         }
 
         // returning -1 when 2 datastores are alive
@@ -203,9 +206,7 @@ namespace PADI_DSTM
             string serverURL = Servers.AvailableServers[serverNumber];
 
             IDatastoreOps datastore = (IDatastoreOps)Activator.GetObject(
-                typeof(IDatastoreOps),
-                serverURL + "DatastoreOps");
-
+                typeof(IDatastoreOps), serverURL + "DatastoreOps");
             try
             {
                 bool success = datastore.accessPadInt(uid);
@@ -230,6 +231,11 @@ namespace PADI_DSTM
                 
             }
             catch (System.IO.IOException)
+            {
+                manageFailedServer(serverURL, serverNumber);
+                return AccessPadInt(uid);
+            }
+            catch (ServerFailedException)
             {
                 manageFailedServer(serverURL, serverNumber);
                 return AccessPadInt(uid);
@@ -267,12 +273,30 @@ namespace PADI_DSTM
 
         public static bool Fail(string url)
         {
+            IDatastoreOps datastore = (IDatastoreOps)Activator.GetObject(
+                typeof(IDatastoreOps),
+                url + "DatastoreOps");
+
+            datastore.Fail();
+            // Force abort transaction, isn't correct for all cases
+            if (Transaction.ACCESSEDSERVERS.Contains(url))
+            {
+                Transaction.State = TransactionState.ABORTED;
+            }
+
+            ILibraryComm master = (ILibraryComm)Activator.GetObject(
+            typeof(ILibraryComm), _master_url + "LibraryComm");
+            master.setFailedServer(url);
+
             return true;
         }
 
         public static bool Freeze(string url)
         {
-            return true;
+            ILibraryComm master = (ILibraryComm)Activator.GetObject(
+           typeof(ILibraryComm), _master_url + "LibraryComm");
+            
+            return master.freeze(url);
         }
 
         public static bool Recover(string url)

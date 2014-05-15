@@ -28,6 +28,16 @@ namespace MasterServer
 
         }
 
+
+
+        // Freezes from the library. The master manages this situation
+        public bool freeze(string url)
+        {
+            return WorkerManager.freeze(url);
+        }
+
+        
+
         public override object InitializeLifetimeService()
         {
             return null;

@@ -13,5 +13,7 @@ namespace CommonTypes
         
         // returns the url of the sucessor that has the UID objects
         string setFailedServer(string failed_url);
+
+        bool freeze(string server_url);
     }
 }

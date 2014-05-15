@@ -24,6 +24,8 @@ namespace MasterServer
         // List of failed workers
         static private Dictionary<int, string> failedServers = new Dictionary<int, string>();
 
+        // List of freezed workers
+        static private Dictionary<int, string> freezedServers = new Dictionary<int, string>();
 
         /*
         static public void printAvailableWorkers()
@@ -102,6 +104,32 @@ namespace MasterServer
             return false;
         }
 
+        internal static bool isFreezedServer(string url)
+        {
+            foreach (int id in freezedServers.Keys)
+            {
+                if (freezedServers[id].Equals(url))
+                    return true;
+            }
+            return false;
+        }
+
+        // Master tells the worker to freeze itself
+        internal static bool freeze(string url)
+        {
+            if (isFailedServer(url) || isFreezedServer(url)) return false;
+
+            IMasterWorker worker = (IMasterWorker)Activator.GetObject(
+                typeof(IMasterWorker), url + "MasterWorker");
+            worker.freeze();
+
+            return true;
+        }
+
+        internal static bool recover(string url)
+        {
+            return true;
+        }
 
         // Returns the total number of servers incl94e0uding the replica and failed servers
         internal static int totalServers()

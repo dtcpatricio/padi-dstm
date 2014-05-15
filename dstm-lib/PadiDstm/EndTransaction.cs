@@ -11,7 +11,7 @@ namespace PADI_DSTM
     {
         public void abort()
         {
-
+            PadiDstm.Transaction.State = TransactionState.ABORTED;
         }
 
         public void commit()

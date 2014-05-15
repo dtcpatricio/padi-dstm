@@ -2,7 +2,7 @@
 using PADI_DSTM;
 
 class SampleApp {
-  /*
+  
     static void Main(string[] args) {
         bool res;
 
@@ -35,23 +35,28 @@ class SampleApp {
         pi_c.Write(70);
         
         Console.WriteLine("a = " + pi_a.Read());
+        res = PadiDstm.Freeze("tcp://localhost:8088/");
         Console.WriteLine("b = " + pi_b.Read());
         Console.WriteLine("c = " + pi_c.Read());
         PadiDstm.Status();
         // The following 3 lines assume we have 2 servers: one at port 2001 and another at port 2002
-        res = PadiDstm.Freeze("tcp://localhost:2001/Server");
+      
+      //res = PadiDstm.Freeze("tcp://localhost:2001/Server");
         res = PadiDstm.Recover("tcp://localhost:2001/Server");
-        res = PadiDstm.Fail("tcp://localhost:2002/Server");
+        res = PadiDstm.Fail("tcp://localhost:8088/");
 
         Console.ReadLine();
         res = PadiDstm.TxCommit();
         
-        Console.WriteLine("TESTE UPDATE 2PC");
         
         res = PadiDstm.TxBegin();
         pi_a = PadiDstm.AccessPadInt(12);
-        pi_b = PadiDstm.AccessPadInt(20); // NOW IT SHOULD WORK BECAUSE OF CHAIN REPLICATION
+        pi_b = PadiDstm.AccessPadInt(20); 
         pi_c = PadiDstm.AccessPadInt(43);
+
+        Console.WriteLine("a = " + pi_a.Read());
+        pi_a.Write(71);
+        
         Console.WriteLine("a = " + pi_a.Read());
         Console.WriteLine("b = " + pi_b.Read());
         Console.WriteLine("c = " + pi_c.Read());
@@ -61,6 +66,6 @@ class SampleApp {
         Console.WriteLine("Transaction committed = " + res);
         Console.ReadLine();
     }
-   */
+   
    
 }

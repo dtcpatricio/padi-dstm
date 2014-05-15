@@ -113,10 +113,10 @@ namespace Datastore
                     //Replica.updateSucessor(TX.WRITTENOBJECTS);
                 }
                 // First phase of commit, temporary write to disk
-                writeAheadLog();
+                //writeAheadLog();
 
-                if (MY_DECISION.Equals(TransactionDecision.COMMIT))
-                    writePermanentLog();
+               // if (MY_DECISION.Equals(TransactionDecision.COMMIT))
+                    //writePermanentLog();
             }
         }
 

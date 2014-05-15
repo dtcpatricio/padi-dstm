@@ -7,12 +7,17 @@ using PADI_DSTM;
 
 class Cicle
 {
+    /*
     static void Main(string[] args)
     {
         bool res = false; int aborted = 0, committed = 0;
 
         PadiDstm.Init();
-        args = new String[] { "C" };
+        String key = Console.ReadLine();
+        if (key.Equals("C"))
+        {
+            args = new String[] { "C" };
+        }
         try
         {
             if ((args.Length > 0) && (args[0].Equals("C")))
@@ -113,4 +118,5 @@ class Cicle
             PadiDstm.TxAbort();
         }
     }
+     */
 }

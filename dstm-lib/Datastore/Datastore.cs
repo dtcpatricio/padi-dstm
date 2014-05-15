@@ -25,31 +25,38 @@ namespace Datastore
 
         private static string _serverURL;
 
-        //timer for sending heartbeat
-       // private static Timer _timer;
-
-        // Execution mode of server
-        private static ExecutionMode _executionMode = ExecutionMode.WORKER;
+        // Normal, Failed or Freezed
+        private static State _state;
 
         public delegate void RemoteAsyncDelegate(string serverURL, List<ServerObject> updatedSO);
 
 
-        internal static string MASTER { get { return _masterURL; }}
+        internal static string MASTER { get { return _masterURL; } }
 
-        internal static string SERVERURL { 
+        internal static string SERVERURL
+        {
             get { return _serverURL; }
             set { _serverURL = value; }
         }
 
-        internal static ExecutionMode EXECUTIONMODE
+        internal static State STATE
         {
-            get { return _executionMode; }
-            set { _executionMode = value; }
+            get { return _state; }
+            set { _state = value; }
         }
 
         internal static List<ServerObject> SERVEROBJECTS
         {
             get { return _serverObjects; }
+        }
+
+        internal static void Freeze()
+        {
+            while (_state.Equals(State.FREEZE))
+            {
+                // Loop until some client calls recover
+                // or the library tells the master to kill the datastore
+            }
         }
 
         /**
@@ -68,16 +75,27 @@ namespace Datastore
 
         internal static List<ServerObject> getVersionsRead(List<ServerObject> serverObjects, int uid)
         {
-            List<ServerObject> versions = new List<ServerObject>();
-            foreach (ServerObject so in serverObjects)
+            try
             {
-                if (so.UID == uid)
+                List<ServerObject> versions = new List<ServerObject>();
+                lock (serverObjects)
                 {
-                    versions.Add(so);
+                    foreach (ServerObject so in serverObjects)
+                    {
+                        if (so.UID == uid)
+                        {
+                            versions.Add(so);
+                        }
+                    }
                 }
-            }
 
-            return versions;
+                return versions;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Catch CALLING READTE!");
+                return null;
+            } 
         }
 
         /**
@@ -88,38 +106,50 @@ namespace Datastore
          **/
         internal static int regTentativeRead(int uid, int txID, string clientURL)
         {
-            if (!_tentativeTransactions.ContainsKey(txID))
-                createTentativeTx(txID, clientURL);
+            try
+            {
+                if (!_tentativeTransactions.ContainsKey(txID))
+                    createTentativeTx(txID, clientURL);
 
-            TentativeTx tx = _tentativeTransactions[txID];
-            // We must ensure there's always a version for txID to read
-            List<ServerObject> versions = getVersionsRead(tx.WRITTENOBJECTS, uid);
-            versions.Sort((x, y) => x.WRITETS.CompareTo(y.WRITETS));
-            versions.Reverse();
-            foreach (ServerObject obj in versions)
-            {
-                if (obj.WRITETS <= txID)
+                TentativeTx tx = _tentativeTransactions[txID];
+                // We must ensure there's always a version for txID to read
+                List<ServerObject> versions = getVersionsRead(tx.WRITTENOBJECTS, uid);
+                // List<ServerObject> versions = getVersionsByUID(uid, txID);
+                versions.Sort((x, y) => x.WRITETS.CompareTo(y.WRITETS));
+                versions.Reverse();
+                foreach (ServerObject obj in versions)
                 {
-                    obj.READTS = txID;
-                    return obj.VALUE;
+                    if (obj.WRITETS <= txID)
+                    {
+                        obj.READTS = txID;
+                        return obj.VALUE;
+                    }
                 }
-            }
-            //return -1; // it should never reach this point. Possibly a TxException should be thrown
-            
-            // Only comes here if it's not in written objects of this tx
-            versions = getVersionsRead(_serverObjects, uid);
-            versions.Sort((x, y) => x.WRITETS.CompareTo(y.WRITETS));
-            versions.Reverse();
-            foreach (ServerObject obj in versions)
-            {
-                if (obj.WRITETS <= txID)
+                //return -1; // it should never reach this point. Possibly a TxException should be thrown
+
+                // Only comes here if it's not in written objects of this tx
+                versions = getVersionsRead(_serverObjects, uid);
+
+                // versions = getVersionsByUID(uid, txID);
+
+                versions.Sort((x, y) => x.WRITETS.CompareTo(y.WRITETS));
+                versions.Reverse();
+                foreach (ServerObject obj in versions)
                 {
-                    obj.READTS = txID;
-                    return obj.VALUE;
+                    if (obj.WRITETS <= txID)
+                    {
+                        obj.READTS = txID;
+                        return obj.VALUE;
+                    }
                 }
+                return -1; // It should never reach this point
             }
-            return -1; // It should never reach this point
-        
+            catch (Exception e)
+            {
+                Console.WriteLine("Catch CALLING WRITE!");
+                return -1;
+            } 
+
         }
 
         private static List<ServerObject> getVersionsByUID(int uid, int txID)
@@ -130,6 +160,7 @@ namespace Datastore
 
             List<ServerObject> versions = new List<ServerObject>();
             // TX.GETSERVEROBJECTS
+            
             foreach (ServerObject obj in tx.WRITTENOBJECTS)
             {
                 if (obj.UID == uid)
@@ -142,11 +173,13 @@ namespace Datastore
             {
                 return versions;
             }
-
-            foreach (ServerObject obj in _serverObjects)
+            lock (_serverObjects)
             {
-                if (obj.UID == uid)
-                    versions.Add(obj);
+                foreach (ServerObject obj in _serverObjects)
+                {
+                    if (obj.UID == uid)
+                        versions.Add(obj);
+                }
             }
             return versions;
         }
@@ -158,7 +191,6 @@ namespace Datastore
          **/
         internal static bool regTentativeWrite(int uid, int newVal, int txID, string clientURL)
         {
-            
             if (!_tentativeTransactions.ContainsKey(txID))
                 createTentativeTx(txID, clientURL);
 
@@ -168,7 +200,7 @@ namespace Datastore
             if (earlierReadTS <= txID)
             {
                 ServerObject tentativeWrite = new ServerObject(uid, newVal, txID);
-               // replaceValue(tentativeWrite);
+                // replaceValue(tentativeWrite);
 
                 TentativeTx tx = _tentativeTransactions[txID];
                 tx.AddObject(tentativeWrite);
@@ -179,6 +211,7 @@ namespace Datastore
             {
                 return false; // abort transaction
             }
+
         }
 
         internal static void addValues(List<ServerObject> serverObjects)
@@ -201,7 +234,7 @@ namespace Datastore
         // TODO: Create inside 2PC
         internal static bool createServerObject(int uid, int txID, string clientURL)
         {
-            if(_serverObjects.Any((x => x.UID == uid && x.WRITETS == 0)))
+            if (_serverObjects.Any((x => x.UID == uid && x.WRITETS == 0)))
                 return false;
 
             TentativeTx tx;
@@ -236,7 +269,7 @@ namespace Datastore
          * 2PC protocol section
          * TODO: Maybe it could be in another section (like a different class)
          **********************************************************************/
-        
+
         /**********************************************************************
          * COORDINATOR part
          **********************************************************************/
@@ -245,45 +278,53 @@ namespace Datastore
         // URLs is the list of participants of transaction txID
         internal static bool Commit(int txID, List<String> URLs)
         {
-            Console.WriteLine("Datastore.Commit: Commit do Datastore");
-            TentativeTx tx = _tentativeTransactions[txID];
-            tx.COORDINATOR = new CoordinatorManager(tx, URLs);
-            tx.COORDINATOR.prepare();
-            if(tx.COORDINATOR.MY_DECISION.Equals(TransactionDecision.ABORT))
+            try
+            {
+                Console.WriteLine("Datastore.Commit: Commit do Datastore");
+                TentativeTx tx = _tentativeTransactions[txID];
+                tx.COORDINATOR = new CoordinatorManager(tx, URLs);
+                tx.COORDINATOR.prepare();
+                if (tx.COORDINATOR.MY_DECISION.Equals(TransactionDecision.ABORT))
+                    return false;
+
+                addValues(tx.WRITTENOBJECTS);
+
+                /*
+                Console.WriteLine("MY OBJECTS ARE : ");
+                foreach (ServerObject o in SERVEROBJECTS)
+                {
+                    Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
+                }
+                */
+                // Send an update to the replica if there is one
+                if (Replica.updateSucessor(tx.WRITTENOBJECTS).Equals(UpdateState.COMMIT))
+                {
+                    return true;
+                }
+
                 return false;
-
-            addValues(tx.WRITTENOBJECTS);
-
-
-            Console.WriteLine("MY OBJECTS ARE : ");
-            foreach (ServerObject o in SERVEROBJECTS)
-            {
-                Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
             }
-
-            // Send an update to the replica if there is one
-            if (Replica.updateSucessor(tx.WRITTENOBJECTS).Equals(UpdateState.COMMIT))
+            catch (Exception e)
             {
-                return true;
+                Console.WriteLine("CATCH IN COMMIT");
+                return false;
             }
-            
-            return false;
         }
 
         internal static void participantVoteYes(int txID, String URL)
         {
-           
+
             TentativeTx tx = _tentativeTransactions[txID];
             tx.COORDINATOR.participantYes(URL);
-           
+
         }
 
         internal static void participantVoteNo(int txID, String URL)
         {
-            
+
             TentativeTx tx = _tentativeTransactions[txID];
             tx.COORDINATOR.participantNo(URL);
-             
+
         }
 
         internal static bool haveCommitted(int txID, String url)
@@ -321,12 +362,12 @@ namespace Datastore
 
             //replaceValue(tx.WRITTENOBJECTS);
             addValues(tx.WRITTENOBJECTS);
-
+            /*
             foreach (ServerObject o in SERVEROBJECTS)
             {
                 Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
             }
-
+            */
             Replica.updateSucessor(tx.WRITTENOBJECTS);
         }
 
@@ -338,12 +379,12 @@ namespace Datastore
 
 
         // Change the mode of execution of datastore to replica
-      /*  internal static void startReplicaMode(Dictionary<int, string> availableServers)
-        {
-            EXECUTIONMODE = ExecutionMode.REPLICA;
-            Replica.NotifyAllWorkers(availableServers);
-        }
-        */
+        /*  internal static void startReplicaMode(Dictionary<int, string> availableServers)
+          {
+              EXECUTIONMODE = ExecutionMode.REPLICA;
+              Replica.NotifyAllWorkers(availableServers);
+          }
+          */
 
         //Send updated transaction written objects to replica if there is one
         /*internal static void updateReplica(List<ServerObject> writtenObjects)
@@ -363,8 +404,8 @@ namespace Datastore
                 Console.WriteLine("CALLING REPLICA TO UPDATE");
                 IAsyncResult RemAr = RemoteDel.BeginInvoke(_serverURL, writtenObjects, null, null);
                 Console.WriteLine("-- CALLING REPLICA TO UPDATE --");*/
-         /*   }
-        }*/
+        /*   }
+       }*/
 
 
 

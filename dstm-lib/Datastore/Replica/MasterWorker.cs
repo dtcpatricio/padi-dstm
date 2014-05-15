@@ -49,22 +49,30 @@ namespace Datastore
         public void substituteFailedServer(string failed_server)
         {
             lock (Datastore.SERVEROBJECTS)
-            {
-                List<ServerObject> replaceList = Replica.WORKERSERVEROBJECTS[failed_server];
-                foreach (ServerObject so in replaceList)
+            {   // If false, the server has not received any update from failed server
+                if (Replica.WORKERSERVEROBJECTS.ContainsKey(failed_server))
                 {
-                    Console.WriteLine("Adding server object from failed server with uid= " + so.UID);
-                    Datastore.SERVEROBJECTS.Add(so);
-                }
+                    List<ServerObject> replaceList = Replica.WORKERSERVEROBJECTS[failed_server];
+                    foreach (ServerObject so in replaceList)
+                    {
+                        Console.WriteLine("Adding server object from failed server with uid= " + so.UID);
+                        Datastore.SERVEROBJECTS.Add(so);
+                    }
 
-                Console.WriteLine("Printing worker server objects:");
-                foreach (ServerObject o in Datastore.SERVEROBJECTS)
-                {
-                    Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
+                    Console.WriteLine("Printing worker server objects:");
+                    foreach (ServerObject o in Datastore.SERVEROBJECTS)
+                    {
+                        Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
+                    }
                 }
 
             }
 
+        }
+
+        public void freeze()
+        {
+            Datastore.STATE = State.FREEZE;
         }
     }
 }

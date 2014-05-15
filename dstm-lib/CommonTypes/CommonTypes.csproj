@@ -49,6 +49,7 @@
     <Compile Include="LibraryMaster\ILibraryComm.cs" />
     <Compile Include="DatastoreMaster\IMasterWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerFailedException.cs" />
     <Compile Include="TxException.cs" />
   </ItemGroup>
   <ItemGroup />
