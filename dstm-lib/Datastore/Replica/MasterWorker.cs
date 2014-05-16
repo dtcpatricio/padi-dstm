@@ -26,6 +26,8 @@ namespace Datastore
             Replica.SUCESSOR = sucessor;
         }
 
+        // WARNING: This function is obsolete
+
         // The worker has a new predecessor (receives updates from a new one)
         public void setPredecessor(string predecessorURL)
         {
@@ -43,21 +45,76 @@ namespace Datastore
             {
                 List<ServerObject> replaceList = Replica.WORKERSERVEROBJECTS;
 
-                    //Send replaceList to sucessor, the data must always be in two place
-                    IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(typeof(IWorkerReplica), Replica.SUCESSOR + "WorkerReplica");
-                    sucessor.update(Datastore.SERVERURL, replaceList);
+                //Send replaceList to sucessor, the data must always be in two place
+                // WARNING: Verificar se o sucessor é ele próprio
+                IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(
+                    typeof(IWorkerReplica), Replica.SUCESSOR + "WorkerReplica");
+                
 
-                    Datastore.SERVEROBJECTS.AddRange(replaceList);
-                    
-                    // debug info
-                    Console.WriteLine("Printing worker server objects:");
-                    foreach (ServerObject o in Datastore.SERVEROBJECTS)
-                    {
-                        Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
-                    }
+                Datastore.SERVEROBJECTS.AddRange(replaceList);
+
+                
+                //sucessor.update(replaceList);
+
+                // Instead of sending only the replace list, it is send all primary objects just to be sure
+                sucessor.update(Datastore.SERVEROBJECTS);
+
+                // debug info
+                Console.WriteLine("Printing worker main server objects:");
+                foreach (ServerObject o in Datastore.SERVEROBJECTS)
+                {
+                    Console.WriteLine("\t UID= " + o.UID + " VALUE=" + o.VALUE);
                 }
-
             }
+
+        }
+
+        // This server will fetch all primary data of sucessor and add it in his list of updates
+        // WARNING: Verificar o caso que o sucessor é ele próprio
+        public void fetch_data(string predecessor_url)
+        {
+            IWorkerReplica predecessor = (IWorkerReplica)Activator.GetObject(
+                    typeof(IWorkerReplica), predecessor_url + "WorkerReplica");
+
+            List<ServerObject> fetched_data = predecessor.fetchData();
+
+            // WARNING: Será que existe algum caso em que adiciona dados repetidos?
+            // Como os dados existem sempre em 2 sitios deve estar correcto
+            Replica.WORKERSERVEROBJECTS = fetched_data;
+        }
+
+        // This server will fetch all primary data of sucessor and replace its own primary data
+        public void fetch_recover_data(string sucessor_url)
+        {
+            IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(
+                    typeof(IWorkerReplica), sucessor_url + "WorkerReplica");
+
+            List<ServerObject> recovered_data = sucessor.fetchRecoverData();
+
+            Replica.SUCESSOR = sucessor_url;
+            Datastore.SERVEROBJECTS = recovered_data;
+            Datastore.STATE = State.NORMAL;
+            Console.WriteLine("Datastore Recovered");
+        }
+
+        public void status()
+        {
+            Console.WriteLine("");
+            Console.WriteLine("**** STATUS ****");
+            foreach (ServerObject so in Datastore.SERVEROBJECTS)
+            {
+                Console.WriteLine("\t " + "UID=" + so.UID + " VALUE=" + so.VALUE); 
+            }
+            Console.WriteLine("**** REPLICATED ****");
+            
+            foreach (ServerObject so in Replica.WORKERSERVEROBJECTS)
+            {
+                Console.WriteLine("\t " + "UID=" + so.UID + " VALUE=" + so.VALUE);
+            }
+
+            Console.WriteLine("**** END ****");
+            Console.WriteLine("");
+        }
 
         public void freeze()
         {

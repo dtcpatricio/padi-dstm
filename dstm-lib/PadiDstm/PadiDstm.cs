@@ -168,7 +168,7 @@ namespace PADI_DSTM
         }
 
         // returning -1 when 2 datastores are alive
-        private static int computeDatastore(int uid)
+        internal static int computeDatastore(int uid)
         {
             // compute the digest of the uid
             byte[] uidBytes = BitConverter.GetBytes(uid);
@@ -268,6 +268,8 @@ namespace PADI_DSTM
 
         public static bool Status()
         {
+            ILibraryComm master = (ILibraryComm)Activator.GetObject(typeof(ILibraryComm), _master_url + "LibraryComm");
+            master.status();
             return true;
         }
 

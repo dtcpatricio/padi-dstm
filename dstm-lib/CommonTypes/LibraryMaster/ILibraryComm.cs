@@ -14,12 +14,14 @@ namespace CommonTypes
         // returns the url of the sucessor that has the UID objects
         string setFailedServer(string failed_url);
 
+        string getSucessorURL(int id);
+
         bool freeze(string server_url);
 
         bool fail(string url);
 
         bool recover(string url);
 
-      //  bool recover(string server_url);
+        void status();
     }
 }

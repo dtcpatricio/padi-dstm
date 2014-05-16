@@ -45,6 +45,14 @@ namespace MasterServer
             return id;
 
         }
+
+        // Returns the id predecessor in replication chain
+        internal static int getFailedID(string url)
+        {
+            int id = failedServers.FirstOrDefault(x => x.Value.Equals(url)).Key;
+            return id;
+        }
+
         // Returns the id sucessor in replication chain
         internal static string getWorkerSucessor(int id)
         {
@@ -112,19 +120,78 @@ namespace MasterServer
         // TODO: Stabilize the system
         internal static bool fail(string url)
         {
-            IDatastoreOps datastore = (IDatastoreOps)Activator.GetObject(
-                typeof(IDatastoreOps), url + "DatastoreOps");
-            
-            datastore.Fail();
-            
+            if (isFailedServer(url)) { return false; }
+
+            int id = getAvailableID(url);
+
+            if (isFreezedServer(url)) { freezedServers.Remove(id); }
+            failedServers.Add(id, url);
+
+            string failed_sucessorURL = getWorkerSucessor(id);
+            string failed_predecessorURL = getWorkerPredecessor(id);
+
+            IMasterWorker failed_sucessor = (IMasterWorker)Activator.GetObject(
+                typeof(IMasterWorker), failed_sucessorURL + "MasterWorker");
+            IMasterWorker failed_predecessor = (IMasterWorker)Activator.GetObject(
+                typeof(IMasterWorker), failed_predecessorURL + "MasterWorker");
+
+            // Na posicao original dos available trocar o url pelo sucessor
+            availableServers[id] = failed_sucessorURL;
+
+            //Set sucessor of failed_predecessor to failed_sucessor -> Problema de concorrencia entre estas 2 operções?
+            failed_predecessor.setSucessor(failed_sucessorURL);
+
+            //Tell the sucessor to substitute the failed server
+            failed_sucessor.substituteFailedServer();
+
+            //Tell the sucessor to fetch the original data from the failed_predecessor and put it in his the list of updates
+            failed_sucessor.fetch_data(failed_predecessorURL);
+
+            //Tell the failed_predecessor to fetch the data of failed_sucessor
+            // WARNING: Verificar o caso me que o sucessor é ele próprio, será que consegue enviar a msg?
+            //            failed_predecessor.fetch_data(failed_sucessorURL);
+
+            // Last thing to do is change the state, so that the library can continue working 
+
+            IMasterWorker datastore = (IMasterWorker)Activator.GetObject(
+                typeof(IMasterWorker), url + "MasterWorker");
+
+            datastore.fail();
+
             return true;
         }
 
         internal static bool recover(string url)
         {
             if (isFailedServer(url))
-                return true;
+            {
+                int failed_id = getFailedID(url);
+                failedServers.Remove(failed_id);
 
+                // Sets the original URL
+                availableServers[failed_id] = url;
+
+                string failed_sucessorURL = getWorkerSucessor(failed_id);
+                string failed_predecessorURL = getWorkerPredecessor(failed_id);
+
+                IMasterWorker failed_predecessor = (IMasterWorker)Activator.GetObject(
+                    typeof(IMasterWorker), failed_predecessorURL + "MasterWorker");
+
+                IMasterWorker datastore = (IMasterWorker)Activator.GetObject(
+                typeof(IMasterWorker), url + "MasterWorker");
+
+                // Set sucessor of the failed predecessor to the recovered server
+                failed_predecessor.setSucessor(url);
+
+                // Fetch data from from failed predecessor to put in his list of updates
+                datastore.fetch_data(failed_predecessorURL);
+
+                // Fetch recover data to recovered server to fetch the primary data of his sucessor
+                //  also sets his sucessor
+                datastore.fetch_recover_data(failed_sucessorURL);
+
+                return true;
+            }
             if (isFreezedServer(url))
             {
                 int freeze_id = getFreezeID(url);
@@ -173,6 +240,20 @@ namespace MasterServer
             remote.setReplica(sucessor, predecessor);
         }
 
+        internal static void status()
+        {
+            foreach (String server_url in availableServers.Values)
+            {
+                if (!isFailedServer(server_url) || !isFreezedServer(server_url))
+                {
+                    IMasterWorker worker = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                        server_url + "MasterWorker");
+                    worker.status();
+                }
+            }
+        }
+
+        
         // Sets the detected url to failed
         internal static string setFailedServer(string url)
         {
@@ -254,5 +335,6 @@ namespace MasterServer
             }
             return null;
         }
+         
     }
 }

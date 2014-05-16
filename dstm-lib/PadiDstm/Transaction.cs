@@ -35,11 +35,14 @@ namespace PADI_DSTM
         // UID has a temporary lock
         internal Dictionary<int, bool> freeze_lock = new Dictionary<int, bool>();
 
+        static bool failed_lock = false;
+
         private const int TIMETOFAILURE = 15000;
 
         private System.Timers.Timer _timer;
 
         public delegate int ReadAsyncDelegate(int uid, int txID, string url);
+
 
         // Timer for remote operations, detect freeze, recover and server failures
 
@@ -86,18 +89,24 @@ namespace PADI_DSTM
             Console.WriteLine("Server " + server_url + " Died!");
             _timer.Enabled = false;
             _timer.AutoReset = false;
-
+            /*
             IDatastoreOps datastore = (IDatastoreOps)Activator.GetObject(
                 typeof(IDatastoreOps), server_url + "DatastoreOps");
 
             datastore.Fail();
-
+            
             State = TransactionState.ABORTED;
-
+            */
             ILibraryComm master = (ILibraryComm)Activator.GetObject(
                         typeof(ILibraryComm), PadiDstm.Master_Url + "LibraryComm");
 
-            master.setFailedServer(server_url);
+
+            failed_lock = true;
+            // master.setFailedServer(server_url);
+            master.fail(server_url);
+            //Update to the new list of servers
+            PadiDstm.Servers.updateCache();
+            failed_lock = false;
         }
 
         internal void resetTimer()
@@ -109,25 +118,53 @@ namespace PADI_DSTM
         // This is the call that the AsyncCallBack delegate will reference.
         public void ReadAsyncCallBack(IAsyncResult ar)
         {
+            while (failed_lock == true) { Thread.Sleep(250); }
+
             lock (this)
             {
                 ReadAsyncDelegate del = (ReadAsyncDelegate)((AsyncResult)ar).AsyncDelegate;
-                Object uid = ar.AsyncState;
+                PadInt padInt = (PadInt)ar.AsyncState;
 
                 int value = del.EndInvoke(ar);
 
                 //In case the server never responds -> force kill 
                 if (value == Int32.MinValue)
                 {
+
                     // TODO: Kill the server
-                    // Manage the fail in the master and return the correct value
                     State = TransactionState.ABORTED;
-                    freeze_lock[(int)uid] = true;
+                    
+                    /*padInt.URL = PadiDstm.Servers.AvailableServers[PadiDstm.computeDatastore(padInt.UID)];
+                    int value2 = reRead(padInt);
+                    AddValue((int)padInt.UID, value2);*/
+                    failed_lock = false;
+                    freeze_lock[(int)padInt.UID] = true;
+
                     return;
                 }
-                AddValue((int)uid, value);
+                AddValue((int)padInt.UID, value);
 
-                freeze_lock[(int)uid] = true;
+                freeze_lock[(int)padInt.UID] = true;
+            }
+        }
+
+        internal int reRead(PadInt padInt)
+        {
+            lock (this)
+            {
+                string remotePadIntURL = padInt.URL + "RemotePadInt";
+                int uid = padInt.UID;
+
+
+                IRemotePadInt remote = (IRemotePadInt)Activator.GetObject(
+                    typeof(IRemotePadInt), remotePadIntURL);
+
+                // call the RemotePadInt to get the value
+                int val = remote.Read(uid, TXID, PadiDstm.Client_Url);
+                AddValue(uid, val);
+
+                addAccessedServer(padInt.URL);
+                return val;
             }
         }
 
@@ -156,19 +193,12 @@ namespace PADI_DSTM
 
             try
             {
-                IAsyncResult RemAr = RemoteDel.BeginInvoke(uid, TXID, PadiDstm.Client_Url, RemoteCallback, uid);
+                IAsyncResult RemAr = RemoteDel.BeginInvoke(uid, TXID, PadiDstm.Client_Url, RemoteCallback, padInt);
             }
             catch (TxException t)
             {
                 Console.WriteLine("TXEXCEPTION" + t.msg);
             }
-            // call the RemotePadInt to get the value
-            /*   val = remote.Read(uid, TXID, PadiDstm.Client_Url);
-               AddValue(uid, val);
-
-               addAccessedServer(padInt.URL);
-               return val;*/
-
 
             timerAlive(padInt.URL);
 
@@ -178,9 +208,14 @@ namespace PADI_DSTM
 
             lock (freeze_lock) { freeze_lock.Remove(uid); }
 
+            if (State.Equals(TransactionState.ABORTED))
+            {
+                // Some server failed
+                Console.WriteLine("Trying to access padint uid=" + padInt.UID + " denied because of server failure");
+                return -1;
+            }
+
             return values[uid];
-
-
         }
 
         internal void Write(PadInt padInt, int val)

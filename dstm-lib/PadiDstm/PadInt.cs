@@ -12,7 +12,7 @@ namespace PADI_DSTM
     {
         private int _uid;
         private int _value;
-        private string _url; // URL of worker server.
+        internal string _url; // URL of worker server.
 
 
         public PadInt(int uid, string url)
@@ -21,7 +21,11 @@ namespace PADI_DSTM
             _url = url;
         }
 
-        public string URL { get { return _url; } }
+        public string URL {
+            get { return _url; }
+            set { _url = value; }
+        }
+        
         public int UID { get { return _uid; } }
 
 

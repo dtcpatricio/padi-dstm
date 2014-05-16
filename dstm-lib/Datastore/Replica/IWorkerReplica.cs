@@ -12,7 +12,10 @@ namespace Datastore
          * Calls from Datastore -> Replica
          */
         //Sends the updated server objects in transaction to replica
-        void update(string worker_url, List<ServerObject> writtenObjects);
+       // void update(string worker_url, List<ServerObject> writtenObjects);
+
+        void update(List<ServerObject> writtenObjects);
+
         List<ServerObject> setSucessor(string sucessor);
         void setPredecessor(string predecessor);
 
@@ -20,5 +23,8 @@ namespace Datastore
          * Calls from Replica -> Datastore
          */
         List<ServerObject> fetchData();
+
+        // Returns the servers primary data
+        List<ServerObject> fetchRecoverData();
     }
 }

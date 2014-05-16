@@ -14,6 +14,7 @@ namespace PADI_DSTM
             PadiDstm.Transaction.State = TransactionState.ABORTED;
         }
 
+
         public void commit()
         {
 

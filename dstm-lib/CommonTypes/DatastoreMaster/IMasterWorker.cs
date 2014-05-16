@@ -17,8 +17,11 @@ namespace CommonTypes
         void setSucessor(string sucessor);
         void setPredecessor(string predecessor);
         void substituteFailedServer();
+        void fetch_data(string predecessor_url);
+        void fetch_recover_data(string failed_sucessor);
         void freeze();
         void recover();
         void fail();
+        void status();
     }
 }

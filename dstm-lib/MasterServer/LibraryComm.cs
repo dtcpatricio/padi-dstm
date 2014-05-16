@@ -20,14 +20,19 @@ namespace MasterServer
             IDictionary<int, string> servers = WorkerManager.getAvailableServers();
             return servers;
         }
-
+        
         // Sets the server with the specified url with a failed state
         public string setFailedServer(string failed_url)
         {
             Console.WriteLine("Setting failed server : " + failed_url);
             return WorkerManager.setFailedServer(failed_url);
         }
+       
 
+        public string getSucessorURL(int id)
+        {
+            return WorkerManager.getWorkerSucessor(id);
+        }
 
         // Freezes from the library. The master manages this situation
         public bool freeze(string url)
@@ -46,12 +51,11 @@ namespace MasterServer
             return WorkerManager.recover(url);
         }
 
-        /*
-        public bool recover(string server_url)
+        public void status()
         {
-            return WorkerManager.recover(server_url);
+            WorkerManager.status();
         }
-        */
+
         public override object InitializeLifetimeService()
         {
             return null;
