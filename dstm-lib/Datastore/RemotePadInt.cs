@@ -45,6 +45,7 @@ namespace Datastore
                     typeof(IEndTransaction), clientURL + "EndTransaction");
                 client.abort();
             }
+            return;
         }
 
         public override object InitializeLifetimeService()

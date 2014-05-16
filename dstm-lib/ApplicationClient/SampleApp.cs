@@ -21,8 +21,8 @@ class SampleApp {
         PadInt pi_b = PadiDstm.CreatePadInt(20);
         PadInt pi_c = PadiDstm.CreatePadInt(43);
 
-        Console.WriteLine("Press <Enter> and kill server with UID = 20");
-        Console.ReadLine();
+       // Console.WriteLine("Press <Enter> and kill server with UID = 20");
+        //Console.ReadLine();
 
         res = PadiDstm.TxCommit();
 
@@ -47,13 +47,15 @@ class SampleApp {
        // res = PadiDstm.Freeze("tcp://localhost:8088/");
         Console.WriteLine("b = " + pi_b.Read());
         Console.WriteLine("c = " + pi_c.Read());
+       
         PadiDstm.Status();
+
         // The following 3 lines assume we have 2 servers: one at port 2001 and another at port 2002
-      
-      //res = PadiDstm.Freeze("tcp://localhost:2001/Server");
-      //  res = PadiDstm.Recover("tcp://localhost:2001/Server");
+        //res = PadiDstm.Freeze("tcp://localhost:2001/Server");
+        //  res = PadiDstm.Recover("tcp://localhost:2001/Server");
         res = PadiDstm.Fail("tcp://localhost:8088/");
         res = PadiDstm.Recover("tcp://localhost:8088/");
+        
         PadiDstm.Status();
         res = PadiDstm.TxCommit();
         Console.WriteLine("Transaction committed = " + res);
