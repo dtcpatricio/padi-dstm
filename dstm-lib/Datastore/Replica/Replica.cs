@@ -51,14 +51,14 @@ namespace Datastore
             }
             catch (SocketException)
             {
-                manageFailedServer(Replica.SUCESSOR);
-                updateSucessor(writtenObjects);
+               // manageFailedServer(Replica.SUCESSOR);
+                //updateSucessor(writtenObjects);
                 return UpdateState.ABORT;
             }
             catch (System.IO.IOException)
             {
-                manageFailedServer(Replica.SUCESSOR);
-                updateSucessor(writtenObjects);
+                //manageFailedServer(Replica.SUCESSOR);
+                //updateSucessor(writtenObjects);
                 return UpdateState.ABORT;
             }
         }

@@ -34,7 +34,7 @@ namespace Datastore
             TX = tx;
             MY_DECISION = TransactionDecision.DEFAULT;
             COORDINATOR_DECISION = TransactionDecision.DEFAULT;
-            createLogDirectory();
+            //createLogDirectory();
         }
 
         // TODO: Necessary because a server can be a coordinator as well as a participant
@@ -64,7 +64,7 @@ namespace Datastore
             
             MY_DECISION = TransactionDecision.COMMIT;
 
-            writeAheadLog();
+          //  writeAheadLog();
 
             timer();
             coord.sendYes(TX.TXID, MY_URL);
@@ -90,8 +90,9 @@ namespace Datastore
         internal void doCommit(int txID, string coordURL)
         {
             _myCoordinatorDecision = TransactionDecision.COMMIT;
-
-            writePermanentLog();
+         
+            Replica.updateSucessor(TX.WRITTENOBJECTS);
+          //  writePermanentLog();
             endTimer();
         }
 
@@ -103,11 +104,11 @@ namespace Datastore
             
             // delete tentative tx, é necessário apagar a lista de written objects?
 
-            if (File.Exists(@LOG_PATH + "WALparticipantPART.txt"))
+         /*   if (File.Exists(@LOG_PATH + "WALparticipantPART.txt"))
             {
                 // TODO: Apagar apenas a linha que foi alterada
                 File.Delete(@LOG_PATH + "WALparticipantPART.txt");
-            }
+            }*/
             endTimer();
 
             Console.WriteLine("ParticipantManager.doAbort finished txID = " + txID);

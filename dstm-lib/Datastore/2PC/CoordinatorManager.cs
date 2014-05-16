@@ -26,7 +26,7 @@ namespace Datastore
             TX = tx;
             MY_DECISION = TransactionDecision.DEFAULT;
             initializeParticipants(URLs);
-            createLogDirectory();
+           // createLogDirectory();
         }
 
         internal void initializeParticipants(List<String> URLs)
@@ -110,7 +110,8 @@ namespace Datastore
                     Console.WriteLine("AFTER MY_DECISION is commit and there are no participants");
 
                     // Send an update to the replica if there is one
-                    //Replica.updateSucessor(TX.WRITTENOBJECTS);
+
+                    Replica.updateSucessor(TX.WRITTENOBJECTS);
                 }
                 // First phase of commit, temporary write to disk
                 //writeAheadLog();

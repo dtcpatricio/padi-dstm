@@ -3,7 +3,7 @@ using PADI_DSTM;
 
 class _3Workers1Failure
 {
-    /*
+    
     static void Main(string[] args)
     {
         
@@ -37,7 +37,7 @@ class _3Workers1Failure
         res = PadiDstm.TxBegin();
         Console.WriteLine("Transaction = " + res);
         pi_a = PadiDstm.AccessPadInt(12);
-        pi_b = PadiDstm.AccessPadInt(20); // NOW IT SHOULD WORK BECAUSE OF CHAIN REPLICATION
+        pi_b = PadiDstm.AccessPadInt(20); 
         pi_c = PadiDstm.AccessPadInt(43);
         pi_a.Write(36);
         pi_b.Write(37);
@@ -49,17 +49,13 @@ class _3Workers1Failure
         res = PadiDstm.Freeze("tcp://localhost:8088/");
         Console.WriteLine("b = " + pi_b.Read());
         Console.WriteLine("c = " + pi_c.Read());
+
+      
         PadiDstm.Status();
-        // The following 3 lines assume we have 2 servers: one at port 2001 and another at port 2002
-
-        //res = PadiDstm.Freeze("tcp://localhost:2001/Server");
-        //  res = PadiDstm.Recover("tcp://localhost:2001/Server");
-        //  res = PadiDstm.Fail("tcp://localhost:8088/");
-
         res = PadiDstm.TxCommit();
+       
         Console.WriteLine("Transaction = " + res);
         Console.WriteLine("Press <Enter> to start new transaction");
-
         Console.ReadLine();
        
         res = PadiDstm.TxBegin();
@@ -68,7 +64,7 @@ class _3Workers1Failure
         pi_c = PadiDstm.AccessPadInt(43);
 
         Console.WriteLine("a = " + pi_a.Read());
-        pi_a.Write(71);
+        pi_a.Write(22);
 
         Console.WriteLine("a = " + pi_a.Read());
         Console.WriteLine("b = " + pi_b.Read());
@@ -80,5 +76,5 @@ class _3Workers1Failure
         Console.ReadLine();
     }
 
-        */
+        
 }

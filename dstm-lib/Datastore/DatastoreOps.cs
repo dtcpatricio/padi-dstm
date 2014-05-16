@@ -11,7 +11,7 @@ namespace Datastore
     {
         public bool accessPadInt(int uid)
         {
-            if (Datastore.STATE.Equals(State.FAILED)) { throw new ServerFailedException(); }
+            if (Datastore.STATE.Equals(State.FAILED)) { return false; }
 
             bool success = Datastore.checkServerObject(uid);
             return success;
@@ -19,7 +19,7 @@ namespace Datastore
 
         public bool createPadInt(int uid, int txID, string clientURL)
         {
-            if (Datastore.STATE.Equals(State.FAILED)) { throw new ServerFailedException(); }
+            if (Datastore.STATE.Equals(State.FAILED)) { return false; }
 
             while (Datastore.STATE.Equals(State.FREEZE)) { Datastore.Freeze(); }
 
@@ -29,7 +29,7 @@ namespace Datastore
 
         public bool commit(int txID, List<string> participants)
         {
-            if (Datastore.STATE.Equals(State.FAILED)) { throw new ServerFailedException(); }
+            if (Datastore.STATE.Equals(State.FAILED)) { return false; }
 
             bool success = Datastore.Commit(txID, participants);
             return success;

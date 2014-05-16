@@ -99,21 +99,25 @@ namespace Datastore
 
         public void status()
         {
-            Console.WriteLine("");
-            Console.WriteLine("**** STATUS ****");
-            foreach (ServerObject so in Datastore.SERVEROBJECTS)
+            lock (Datastore.SERVEROBJECTS)
             {
-                Console.WriteLine("\t " + "UID=" + so.UID + " VALUE=" + so.VALUE); 
-            }
-            Console.WriteLine("**** REPLICATED ****");
-            
-            foreach (ServerObject so in Replica.WORKERSERVEROBJECTS)
-            {
-                Console.WriteLine("\t " + "UID=" + so.UID + " VALUE=" + so.VALUE);
-            }
+                Console.WriteLine("");
+                Console.WriteLine("**** STATUS ****");
 
-            Console.WriteLine("**** END ****");
-            Console.WriteLine("");
+                foreach (ServerObject so in Datastore.SERVEROBJECTS)
+                {
+                    Console.WriteLine("\t " + "UID=" + so.UID + " VALUE=" + so.VALUE);
+                }
+                Console.WriteLine("**** REPLICATED ****");
+
+                foreach (ServerObject so in Replica.WORKERSERVEROBJECTS)
+                {
+                    Console.WriteLine("\t " + "UID=" + so.UID + " VALUE=" + so.VALUE);
+                }
+
+                Console.WriteLine("**** END ****");
+                Console.WriteLine("");
+            }
         }
 
         public void freeze()

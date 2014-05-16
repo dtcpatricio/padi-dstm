@@ -116,7 +116,7 @@ namespace PADI_DSTM
         // This is the call that the AsyncCallBack delegate will reference.
         public void ReadAsyncCallBack(IAsyncResult ar)
         {
-            while (failed_lock == true) { Thread.Sleep(250); }
+            while (failed_lock == true) { Thread.Sleep(1); }
 
             lock (this)
             {
@@ -149,7 +149,7 @@ namespace PADI_DSTM
         // This is the call that the AsyncCallBack delegate will reference.
         public void WriteAsyncCallBack(IAsyncResult ar)
         {
-            while (failed_lock == true) { Thread.Sleep(250); }
+            while (failed_lock == true) { Thread.Sleep(1); }
 
             failed_lock = false;
             write_lock = false;         
@@ -204,7 +204,7 @@ namespace PADI_DSTM
             catch (TxException t) { Console.WriteLine("TXEXCEPTION" + t.msg); }
 
             timerAlive(padInt.URL);
-            while (!freeze_lock[uid]) { Thread.Sleep(250); }
+            while (!freeze_lock[uid]) { Thread.Sleep(1); }
             resetTimer();
             lock (freeze_lock) { freeze_lock.Remove(uid); }
 
@@ -237,7 +237,7 @@ namespace PADI_DSTM
             IAsyncResult RemAr = RemoteDel.BeginInvoke(uid, TXID, val, PadiDstm.Client_Url, RemoteCallback, padInt);
 
             timerAlive(padInt.URL);
-            while (write_lock) { Thread.Sleep(250); }
+            while (write_lock) { Thread.Sleep(1); }
 
             resetTimer();
             
