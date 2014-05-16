@@ -91,7 +91,7 @@ namespace Datastore
 
                 return versions;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Catch CALLING READTE!");
                 return null;
@@ -144,7 +144,7 @@ namespace Datastore
                 }
                 return -1; // It should never reach this point
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Catch CALLING WRITE!");
                 return -1;
@@ -304,7 +304,7 @@ namespace Datastore
 
                 return false;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("CATCH IN COMMIT");
                 return false;
@@ -376,38 +376,5 @@ namespace Datastore
             TentativeTx tx = _tentativeTransactions[txID];
             tx.PARTICIPANT.doAbort(txID, coordURL);
         }
-
-
-        // Change the mode of execution of datastore to replica
-        /*  internal static void startReplicaMode(Dictionary<int, string> availableServers)
-          {
-              EXECUTIONMODE = ExecutionMode.REPLICA;
-              Replica.NotifyAllWorkers(availableServers);
-          }
-          */
-
-        //Send updated transaction written objects to replica if there is one
-        /*internal static void updateReplica(List<ServerObject> writtenObjects)
-        {
-            if (Replica.REPLICAURL != null)
-            {
-                IWorkerReplica replica = (IWorkerReplica)Activator.GetObject(
-                typeof(IWorkerReplica),
-                Replica.REPLICAURL + "WorkerReplica");
-
-                replica.update(_serverURL, writtenObjects);
-
-                /*
-                // Create delegate to remote method
-                RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(replica.update);
-                // Call delegate to remote method
-                Console.WriteLine("CALLING REPLICA TO UPDATE");
-                IAsyncResult RemAr = RemoteDel.BeginInvoke(_serverURL, writtenObjects, null, null);
-                Console.WriteLine("-- CALLING REPLICA TO UPDATE --");*/
-        /*   }
-       }*/
-
-
-
     }
 }

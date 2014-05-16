@@ -4,7 +4,7 @@ using PADI_DSTM;
 class SampleApp {
   
     static void Main(string[] args) {
-
+        PadiDstm.Init();
         bool res;
         String recover = Console.ReadLine();
         if (recover.Equals("R"))
@@ -15,7 +15,7 @@ class SampleApp {
         }
        
 
-        PadiDstm.Init();
+        
         res = PadiDstm.TxBegin();
         Console.WriteLine("Transaction = " + res);
         PadInt pi_a = PadiDstm.CreatePadInt(12);

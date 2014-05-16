@@ -8,10 +8,17 @@ namespace Datastore
 {
     internal interface IWorkerReplica
     {
+        /**
+         * Calls from Datastore -> Replica
+         */
         //Sends the updated server objects in transaction to replica
         void update(string worker_url, List<ServerObject> writtenObjects);
-
         List<ServerObject> setSucessor(string sucessor);
         void setPredecessor(string predecessor);
+
+        /**
+         * Calls from Replica -> Datastore
+         */
+        List<ServerObject> fetchData();
     }
 }

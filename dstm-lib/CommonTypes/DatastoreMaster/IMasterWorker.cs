@@ -16,9 +16,9 @@ namespace CommonTypes
         void setReplica(string sucessor, string predecessor);
         void setSucessor(string sucessor);
         void setPredecessor(string predecessor);
-
-        void substituteFailedServer(string failed_server);
-
+        void substituteFailedServer();
         void freeze();
+        void recover();
+        void fail();
     }
 }

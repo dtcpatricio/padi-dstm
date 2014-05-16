@@ -51,14 +51,6 @@ namespace Datastore
                 WellKnownObjectMode.SingleCall);
             System.Console.WriteLine("Registered MasterWorker on tcp://localhost:" + port + "/MasterWorker");
 
-            // - Replica communication with worker
-            RemotingConfiguration.RegisterWellKnownServiceType(
-                typeof(ReplicaWorker),
-                "ReplicaWorker",
-                WellKnownObjectMode.SingleCall);
-            System.Console.WriteLine("Registered ReplicaWorker on tcp://localhost:" + port + "/ReplicaWorker");
-
-
             // TODO: Not sure if creation of 2 services corresponding to participant and coordinator, or 
             // integration with already specified services (RemotePadInt or DatastoreOps)
             // Participant or coordinator

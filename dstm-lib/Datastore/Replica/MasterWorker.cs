@@ -12,18 +12,6 @@ namespace Datastore
 {
     class MasterWorker : MarshalByRefObject, IMasterWorker
     {
-       /* public void setAsReplica(Dictionary<int, string> availableServers)
-        {
-            Replica.ChangeToReplica(availableServers);
-        }
-
-        // The master ID of the worker server to replace
-        public void setWorker(int id)
-        {
-            Console.WriteLine("NOW IM A WORKER WITH ID=" + id);
-            Replica.changeToWorker(id);
-        }
-        */
         // The master ID of the worker server to replace
         public void setReplica(string sucessor, string predecessor)
         {
@@ -31,44 +19,37 @@ namespace Datastore
             Replica.setReplica(sucessor, predecessor);
         }
 
-        // The worker has a new sucessor
+        // The worker has a new sucessor (sends updates to a new one)
         public void setSucessor(string sucessor)
         {
             Console.WriteLine("AFTER SERVER FAILED MY SUCESSOR IS = " + sucessor);
             Replica.SUCESSOR = sucessor;
         }
 
-        // The worker has a new sucessor
-        public void setPredecessor(string predecessor)
+        // The worker has a new predecessor (receives updates from a new one)
+        public void setPredecessor(string predecessorURL)
         {
+            IWorkerReplica predecessor = (IWorkerReplica)Activator.GetObject(typeof(IWorkerReplica), predecessorURL + "WorkerReplica");
+            List<ServerObject> backupObjects = predecessor.fetchData();
+            Replica.update(backupObjects);
             Console.WriteLine("AFTER SERVER FAILED MY PREDECESSOR IS = " + predecessor);
-            Replica.PREDECESSOR = predecessor;
+            Replica.PREDECESSOR = predecessorURL;
         }
 
         //TODO: Start receiving requests from the failed server
-        public void substituteFailedServer(string failed_server)
+        public void substituteFailedServer()
         {
             lock (Datastore.SERVEROBJECTS)
-            {   // If false, the server has not received any update from failed server
-                if (Replica.WORKERSERVEROBJECTS.ContainsKey(failed_server))
-                {
-                    List<ServerObject> replaceList = Replica.WORKERSERVEROBJECTS[failed_server];
+            {
+                List<ServerObject> replaceList = Replica.WORKERSERVEROBJECTS;
 
                     //Send replaceList to sucessor, the data must always be in two place
-                    IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(
-                              typeof(IWorkerReplica),
-                    Replica.SUCESSOR + "WorkerReplica");
-
+                    IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(typeof(IWorkerReplica), Replica.SUCESSOR + "WorkerReplica");
                     sucessor.update(Datastore.SERVERURL, replaceList);
 
-                    //void update(string worker_url, List<ServerObject> writtenObjects);
-
-                    foreach (ServerObject so in replaceList)
-                    {
-                        Console.WriteLine("Adding server object from failed server with uid= " + so.UID);
-                        Datastore.SERVEROBJECTS.Add(so);
-                    }
-
+                    Datastore.SERVEROBJECTS.AddRange(replaceList);
+                    
+                    // debug info
                     Console.WriteLine("Printing worker server objects:");
                     foreach (ServerObject o in Datastore.SERVEROBJECTS)
                     {
@@ -78,11 +59,17 @@ namespace Datastore
 
             }
 
-        }
-
         public void freeze()
         {
             Datastore.STATE = State.FREEZE;
+        }
+        public void recover()
+        {
+            Datastore.STATE = State.NORMAL;
+        }
+        public void fail()
+        {
+            Datastore.STATE = State.FAILED;
         }
     }
 }

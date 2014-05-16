@@ -303,8 +303,8 @@ namespace PADI_DSTM
         {
             ILibraryComm master = (ILibraryComm)Activator.GetObject(
            typeof(ILibraryComm), _master_url + "LibraryComm");
-
-            return master.recover(url);
+            bool success = master.recover(url);
+            return success;
         }
     }
 }

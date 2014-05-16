@@ -11,7 +11,7 @@ namespace Datastore
         public void update(string worker_url, List<ServerObject> writtenObjects)
         {
             Console.WriteLine("Predecessor Worker: " + worker_url + " called update");
-            Replica.update(worker_url, writtenObjects);
+            Replica.update(writtenObjects);
         }
 
         public List<ServerObject> setSucessor(string sucessor)
@@ -27,5 +27,12 @@ namespace Datastore
             Console.WriteLine("NOW MY PREDECESSOR IS = " + predecessor);
         }
 
+        /**
+         * Calls from Replica -> Datastore
+         */
+        public List<ServerObject> fetchData()
+        {
+            return Datastore.SERVEROBJECTS;
+        }
     }
 }

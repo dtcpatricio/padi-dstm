@@ -10,17 +10,11 @@ namespace Datastore
 {
     internal static class Replica
     {
-        // Worker's replica url
-        //private static string _replicaURL;
-
         // List of stored servers objects naturally orded from available servers in Master
-        private static Dictionary<string, List<ServerObject>> worker_serverObjects = new Dictionary<string, List<ServerObject>>();
+        private static List<ServerObject> worker_serverObjects = new List<ServerObject>();
 
         private static string _sucessor;
-
         private static string _predecessor;
-
-
 
         internal static string SUCESSOR
         {
@@ -34,7 +28,7 @@ namespace Datastore
             set { _predecessor = value; }
         }
 
-        internal static Dictionary<string, List<ServerObject>> WORKERSERVEROBJECTS
+        internal static List<ServerObject> WORKERSERVEROBJECTS
         {
             get { return worker_serverObjects; }
         }
@@ -50,12 +44,8 @@ namespace Datastore
         {
             try
             {
-                IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(
-                typeof(IWorkerReplica),
-                Replica.SUCESSOR + "WorkerReplica");
-
+                IWorkerReplica sucessor = (IWorkerReplica)Activator.GetObject(typeof(IWorkerReplica), Replica.SUCESSOR + "WorkerReplica");
                 sucessor.update(Datastore.SERVERURL, writtenObjects);
-
                 return UpdateState.COMMIT;
             }
             catch (SocketException)
@@ -86,59 +76,24 @@ namespace Datastore
             // Server failed
             if (sucessor_url == null)
                 Console.WriteLine("ERROR: THERE ARE NO SERVERS THAT HAVE THE REQUESTED PADINT");
-        
-
-            /*
-            // Create delegate to remote method
-            RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(replica.update);
-            // Call delegate to remote method
-            Console.WriteLine("CALLING REPLICA TO UPDATE");
-            IAsyncResult RemAr = RemoteDel.BeginInvoke(_serverURL, writtenObjects, null, null);
-            Console.WriteLine("-- CALLING REPLICA TO UPDATE --");*/
         }
-
-        // TODO: Test with sucessive updates 
-        internal static void update(string predecessor, List<ServerObject> updatedList)
+ 
+        /**
+         * Method to backup the written objects on the transaction
+         * Only called by another datastore
+         * @path Participant->doCommit->Replica.updateSucessor->update
+         */
+        internal static void update(List<ServerObject> updatedList)
         {
             lock (worker_serverObjects)
             {
-                if (!worker_serverObjects.ContainsKey(predecessor))
-                {
-                    worker_serverObjects.Add(predecessor, updatedList);
-
-                    foreach (ServerObject so in worker_serverObjects[predecessor])
+                // debug info
+                foreach (ServerObject so in updatedList)
                     {
                         Console.WriteLine("\t" + "UPDATING UID=" + so.UID + " VALUE=" + so.VALUE);
                     }
 
-                    return;
-                }
-
-                List<ServerObject> oldList = worker_serverObjects[predecessor];
-
-                int j = 0;
-                bool updated = false;
-                foreach (ServerObject updatedSO in updatedList)
-                {
-                    foreach (ServerObject oldSO in oldList)
-                    {
-                        if (oldSO.UID.Equals(updatedSO.UID))
-                        {
-                            oldList[j] = updatedSO;
-                            j = 0;
-                            updated = true;
-                            break;
-                        }
-                        j++;
-                    }
-
-                    if (updated == false)
-                    {
-                        oldList.Add(updatedSO);
-                        updated = false;
-                    }
-                    j = 0;
-                }
+                Replica.WORKERSERVEROBJECTS.AddRange(updatedList);
             }
             /*
             foreach (ServerObject so in worker_serverObjects[predecessor])
@@ -173,7 +128,7 @@ namespace Datastore
             IWorkerReplica replica = (IWorkerReplica)Activator.GetObject(
                     typeof(IWorkerReplica), predecessor + "WorkerReplica");
 
-            worker_serverObjects[predecessor] = replica.setSucessor(myURL);
+            worker_serverObjects = replica.setSucessor(myURL);
         }
 
     }

@@ -46,7 +46,7 @@ namespace PADI_DSTM
                 PadiDstm.Transaction.Write(this, val);
                 return;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Catch CALLING WRITE!");
             }

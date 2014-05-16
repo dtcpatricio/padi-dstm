@@ -27,19 +27,6 @@ namespace MasterServer
         // List of freezed workers
         static private Dictionary<int, string> freezedServers = new Dictionary<int, string>();
 
-        
-
-        /*
-        static public void printAvailableWorkers()
-        {
-            Console.WriteLine("Available workers: ");
-            for (int i = 0; i < getWorkers().Count; i++)
-            {
-                Console.WriteLine("\t" + getAvailableWorker(i) + ".");
-            }
-        }
-        */
-
         internal static IDictionary<int, string> getAvailableServers()
         {
             return availableServers;
@@ -49,26 +36,22 @@ namespace MasterServer
         internal static int getAvailableID(string url)
         {
             int id = availableServers.FirstOrDefault(x => x.Value.Equals(url)).Key;
-
             return id;
         }
 
         internal static int getFreezeID(string url)
         {
             int id = freezedServers.FirstOrDefault(x => x.Value.Equals(url)).Key;
-
             return id;
 
         }
         // Returns the id sucessor in replication chain
         internal static string getWorkerSucessor(int id)
         {
-            if (id == availableServers.Count)
+            if (id == availableServers.Count - 1)
                 return availableServers[0];
-
             return availableServers[id + 1];
         }
-
 
         // Returns the id predecessor in replication chain
         internal static string getWorkerPredecessor(int id)
@@ -76,13 +59,13 @@ namespace MasterServer
             if (id == 0)
                 return availableServers[availableServers.Count - 1];
             return availableServers[id - 1];
-        }         
+        }
 
         internal static string getFailedSucessor(int failed_id)
         {
             // Return the sucessor of the failed server
             if (availableServers.ContainsKey(failed_id + 1))
-                return availableServers[failed_id+1];
+                return availableServers[failed_id + 1];
 
             // Return the head of the chain
             if (availableServers.Count > 0)
@@ -118,13 +101,8 @@ namespace MasterServer
                 typeof(IMasterWorker), url + "MasterWorker");
 
             int id = getAvailableID(url);
-            int sucessorID = id + 1;
-            if (sucessorID >= availableServers.Count)
-                sucessorID = 0;
 
             freezedServers.Add(id, url);
-            availableServers[id] = availableServers[sucessorID];
-            
             worker.freeze();
 
             return true;
@@ -138,7 +116,10 @@ namespace MasterServer
             if (isFreezedServer(url))
             {
                 int freeze_id = getFreezeID(url);
+                freezedServers.Remove(freeze_id);
                 availableServers[freeze_id] = url;
+                IMasterWorker datastore = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker), url + "MasterWorker");
+                datastore.recover();
                 return true;
             }
             return false;
@@ -152,8 +133,11 @@ namespace MasterServer
         }
 
 
-        // Second Server added is always the replica server
-        // TODO: FIX UGLY CODE
+        /**
+         * Add a new server into the system
+         * A freezed server is also an "available" server,
+         * hence we only need to test if the url is already in failed or available
+         */
         internal static bool addServer(string url)
         {
             if (!availableServers.Values.Contains(url) &&
@@ -169,17 +153,6 @@ namespace MasterServer
                 return false;
         }
 
-        // Send a a setAsReplica for the url worker
-        /*   internal static void CreateReplica(string url)
-           {
-
-               REPLICAURL = url;
-               IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
-                   url + "MasterWorker");
-               remote.setAsReplica(availableServers);
-
-           }*/
-
         // Set the sucessor replica of the worker
         internal static void SetReplica(string worker_url, string sucessor, string predecessor)
         {
@@ -189,57 +162,85 @@ namespace MasterServer
         }
 
         // Sets the detected url to failed
-        internal static string setFailedServer(string failed_url)
+        internal static string setFailedServer(string url)
         {
-            lock (availableServers)
+            // simple sanity check
+            if (!failedServers.ContainsValue(url))
             {
-                foreach (int id in availableServers.Keys)
+                // if the server was available do the following
+                if (availableServers.ContainsValue(url))
                 {
-                    if (availableServers[id].Equals(failed_url))
+                    lock (availableServers)
                     {
-                        // Get the sucessor of failed server and
-                        // set the predecessor's sucessor to this server
-                        string failed_sucessor = getWorkerSucessor(id);
-                        string failed_predecessor = getWorkerPredecessor(id);
+                        int id = getAvailableID(url);
+                        int sucessorID = id + 1;
+                        if (sucessorID >= availableServers.Count)
+                            sucessorID = 0;
+                        int predecessorID = id - 1;
+                        if (predecessorID < 0)
+                            predecessorID = availableServers.Count;
 
-                        IMasterWorker remote_sucessor =
+                        string predecessorURL = availableServers[predecessorID];
+                        string sucessorURL = availableServers[sucessorID];
+                        string failedURL = availableServers[id];
+
+                        IMasterWorker sucessor =
                                         (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
-                                          failed_sucessor + "MasterWorker");
-
-                        remote_sucessor.setPredecessor(failed_predecessor);
-
-                        IMasterWorker remote_predecessor =
+                                          sucessorURL + "MasterWorker");
+                        IMasterWorker predecessor =
                                         (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
-                                          failed_predecessor + "MasterWorker");
-                        
-                        remote_predecessor.setSucessor(failed_sucessor);
-
-                        remote_sucessor.substituteFailedServer(failed_url);
-
-                        failedServers.Add(id, failed_url);
-                        availableServers.Remove(id);
-
-                        return failed_sucessor;
+                                          predecessorURL + "MasterWorker");
+                        IMasterWorker failed =
+                                        (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                                          failedURL + "MasterWorker");
+                        availableServers[id] = sucessorURL; // same as availableServers[successorID]
+                        sucessor.setPredecessor(predecessorURL);
+                        predecessor.setSucessor(sucessorURL);
+                        sucessor.substituteFailedServer();
+                        failed.fail();
+                        failedServers.Add(id, url);
+                        return sucessorURL;
                     }
                 }
-                // TESTAR ESTE CASO 2 CLIENTES
-                foreach (int id in failedServers.Keys)
+                else if (freezedServers.ContainsValue(url))
                 {
-                    if(failedServers[id].Equals(failed_url))
-                        return getFailedSucessor(id);
+                    lock (freezedServers)
+                    {
+                        int id = getFreezeID(url);
+                        int sucessorID = id + 1;
+                        if (sucessorID >= freezedServers.Count)
+                            sucessorID = 0;
+                        int predecessorID = id - 1;
+                        if (predecessorID < 0)
+                            predecessorID = freezedServers.Count;
+
+                        string predecessorURL = freezedServers[predecessorID];
+                        string sucessorURL = freezedServers[sucessorID];
+                        string failedURL = freezedServers[id];
+
+                        IMasterWorker sucessor =
+                                        (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                                          sucessorURL + "MasterWorker");
+                        IMasterWorker predecessor =
+                                        (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                                          predecessorURL + "MasterWorker");
+                        IMasterWorker failed =
+                                        (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
+                                          failedURL + "MasterWorker");
+                        // the server was both in available and freezed servers
+                        availableServers[id] = sucessorURL;
+                        sucessor.setPredecessor(predecessorURL);
+                        predecessor.setSucessor(sucessorURL);
+                        sucessor.substituteFailedServer();
+                        failed.fail();
+                        freezedServers.Remove(id);
+                        failedServers.Add(id, url);
+                        return sucessorURL;
+                    }
                 }
-                Console.WriteLine("WorkerManager.setFailedServers IT SHOULD NOT BE HERE");
-                return null;
+
             }
+            return null;
         }
-
-        /* internal static void setWorker(int id)
-         {
-             IMasterWorker remote = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker),
-                     REPLICAURL + "MasterWorker");
-
-             remote.setWorker(id);
-         }
-         */
     }
 }

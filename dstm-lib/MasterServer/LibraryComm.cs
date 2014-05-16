@@ -21,14 +21,12 @@ namespace MasterServer
             return servers;
         }
 
+        // Sets the server with the specified url with a failed state
         public string setFailedServer(string failed_url)
         {
             Console.WriteLine("Setting failed server : " + failed_url);
             return WorkerManager.setFailedServer(failed_url);
-
         }
-
-
 
         // Freezes from the library. The master manages this situation
         public bool freeze(string url)
@@ -39,6 +37,11 @@ namespace MasterServer
         public override object InitializeLifetimeService()
         {
             return null;
+        }
+
+        public bool recover(string server_url)
+        {
+            return WorkerManager.recover(server_url);
         }
     }
 }
