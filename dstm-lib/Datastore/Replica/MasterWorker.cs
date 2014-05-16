@@ -61,14 +61,17 @@ namespace Datastore
 
         public void freeze()
         {
+            Console.WriteLine("Worker Freezed");
             Datastore.STATE = State.FREEZE;
         }
         public void recover()
         {
+            Console.WriteLine("Worker Recovered");
             Datastore.STATE = State.NORMAL;
         }
         public void fail()
         {
+            Console.WriteLine("Worker Failed");
             Datastore.STATE = State.FAILED;
         }
     }

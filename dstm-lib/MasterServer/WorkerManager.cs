@@ -108,6 +108,18 @@ namespace MasterServer
             return true;
         }
 
+        // Master tells the worker to fail itself and stabilizes the system
+        // TODO: Stabilize the system
+        internal static bool fail(string url)
+        {
+            IDatastoreOps datastore = (IDatastoreOps)Activator.GetObject(
+                typeof(IDatastoreOps), url + "DatastoreOps");
+            
+            datastore.Fail();
+            
+            return true;
+        }
+
         internal static bool recover(string url)
         {
             if (isFailedServer(url))
@@ -118,8 +130,8 @@ namespace MasterServer
                 int freeze_id = getFreezeID(url);
                 freezedServers.Remove(freeze_id);
                 availableServers[freeze_id] = url;
-                IMasterWorker datastore = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker), url + "MasterWorker");
-                datastore.recover();
+                IMasterWorker worker = (IMasterWorker)Activator.GetObject(typeof(IMasterWorker), url + "MasterWorker");
+                worker.recover();
                 return true;
             }
             return false;

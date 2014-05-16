@@ -28,20 +28,33 @@ namespace MasterServer
             return WorkerManager.setFailedServer(failed_url);
         }
 
+
         // Freezes from the library. The master manages this situation
         public bool freeze(string url)
         {
             return WorkerManager.freeze(url);
         }
 
-        public override object InitializeLifetimeService()
+        public bool fail(string url)
         {
-            return null;
+            return WorkerManager.fail(url);
         }
 
+
+        public bool recover(string url)
+        {
+            return WorkerManager.recover(url);
+        }
+
+        /*
         public bool recover(string server_url)
         {
             return WorkerManager.recover(server_url);
+        }
+        */
+        public override object InitializeLifetimeService()
+        {
+            return null;
         }
     }
 }

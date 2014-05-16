@@ -7,6 +7,7 @@ class SampleApp {
         PadiDstm.Init();
         bool res;
         String recover = Console.ReadLine();
+       
         if (recover.Equals("R"))
         {
             res = PadiDstm.Recover("tcp://localhost:8088/");
@@ -14,8 +15,6 @@ class SampleApp {
             return;
         }
        
-
-        
         res = PadiDstm.TxBegin();
         Console.WriteLine("Transaction = " + res);
         PadInt pi_a = PadiDstm.CreatePadInt(12);
@@ -52,7 +51,7 @@ class SampleApp {
       
       //res = PadiDstm.Freeze("tcp://localhost:2001/Server");
       //  res = PadiDstm.Recover("tcp://localhost:2001/Server");
-        res = PadiDstm.Fail("tcp://localhost:8088/");
+      //  res = PadiDstm.Fail("tcp://localhost:8088/");
 
         Console.ReadLine();
         res = PadiDstm.TxCommit();

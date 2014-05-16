@@ -116,9 +116,11 @@ namespace PADI_DSTM
 
                 int value = del.EndInvoke(ar);
 
-                //In case the 
+                //In case the server never responds -> force kill 
                 if (value == Int32.MinValue)
                 {
+                    // TODO: Kill the server
+                    // Manage the fail in the master and return the correct value
                     State = TransactionState.ABORTED;
                     freeze_lock[(int)uid] = true;
                     return;

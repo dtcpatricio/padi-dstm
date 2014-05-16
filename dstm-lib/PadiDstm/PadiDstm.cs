@@ -144,10 +144,11 @@ namespace PADI_DSTM
                 }
                 else
                 {
-                    //Maybe throwexception unable to create padint, uid already exists
                     return null;
                 }
             }
+            // If failed catch exception or special number int32.MIN to detect that the server
+            // failed and tell the master to stabilize the system
             catch (SocketException)
             {
                 manageFailedServer(serverURL, serverNumber);
@@ -219,7 +220,6 @@ namespace PADI_DSTM
                 }
                 else
                 {
-                    // Maybe throwexception unable to create padint, uid already exists
                     // Enunciado: Returns null if the object does not exist already.
                     return null;
                 }
@@ -228,7 +228,7 @@ namespace PADI_DSTM
             {
                 manageFailedServer(serverURL, serverNumber);
                 return AccessPadInt(uid);
-                
+
             }
             catch (System.IO.IOException)
             {
@@ -245,9 +245,9 @@ namespace PADI_DSTM
         // Returns the server url that has the requested UID objects (Sucessor)
         public static string manageFailedServer(string failed_url, int serverNumber)
         {
-            Console.WriteLine("INSIDE ACCESS CATCH!!!");
+            Console.WriteLine("INSIDE Manage Failed Server CATCH!!!");
             string sucessor_url;
-            
+
             ILibraryComm master = (ILibraryComm)Activator.GetObject(
             typeof(ILibraryComm), _master_url + "LibraryComm");
             sucessor_url = master.setFailedServer(failed_url);
@@ -261,11 +261,11 @@ namespace PADI_DSTM
 
 
             Servers.AvailableServers[serverNumber] = sucessor_url;
-            
+
             return sucessor_url;
         }
-                
-   
+
+
         public static bool Status()
         {
             return true;
@@ -273,20 +273,15 @@ namespace PADI_DSTM
 
         public static bool Fail(string url)
         {
-            IDatastoreOps datastore = (IDatastoreOps)Activator.GetObject(
-                typeof(IDatastoreOps),
-                url + "DatastoreOps");
+            ILibraryComm master = (ILibraryComm)Activator.GetObject( typeof(ILibraryComm), _master_url + "LibraryComm");
 
-            datastore.Fail();
+            master.fail(url);
+
             // Force abort transaction, isn't correct for all cases
-            if (Transaction.ACCESSEDSERVERS.Contains(url))
+            /*if (Transaction.ACCESSEDSERVERS.Contains(url))
             {
                 Transaction.State = TransactionState.ABORTED;
-            }
-
-            ILibraryComm master = (ILibraryComm)Activator.GetObject(
-            typeof(ILibraryComm), _master_url + "LibraryComm");
-            master.setFailedServer(url);
+            }*/
 
             return true;
         }
@@ -295,7 +290,7 @@ namespace PADI_DSTM
         {
             ILibraryComm master = (ILibraryComm)Activator.GetObject(
            typeof(ILibraryComm), _master_url + "LibraryComm");
-            
+
             return master.freeze(url);
         }
 
@@ -303,6 +298,7 @@ namespace PADI_DSTM
         {
             ILibraryComm master = (ILibraryComm)Activator.GetObject(
            typeof(ILibraryComm), _master_url + "LibraryComm");
+
             bool success = master.recover(url);
             return success;
         }

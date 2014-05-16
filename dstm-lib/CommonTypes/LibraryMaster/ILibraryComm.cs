@@ -15,6 +15,11 @@ namespace CommonTypes
         string setFailedServer(string failed_url);
 
         bool freeze(string server_url);
-        bool recover(string server_url);
+
+        bool fail(string url);
+
+        bool recover(string url);
+
+      //  bool recover(string server_url);
     }
 }

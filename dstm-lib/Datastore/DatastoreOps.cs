@@ -21,10 +21,7 @@ namespace Datastore
         {
             if (Datastore.STATE.Equals(State.FAILED)) { throw new ServerFailedException(); }
 
-            while (Datastore.STATE.Equals(State.FREEZE)) {
-                Console.WriteLine("SERVER FAILED!");
-                Datastore.Freeze(); 
-            }
+            while (Datastore.STATE.Equals(State.FREEZE)) { Datastore.Freeze(); }
 
             bool success = Datastore.createServerObject(uid, txID, clientURL);
             return success;
