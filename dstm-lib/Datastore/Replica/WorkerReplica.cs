@@ -8,12 +8,6 @@ namespace Datastore
 {
     class WorkerReplica : MarshalByRefObject, IWorkerReplica
     {
-        /*
-        public void update(string worker_url, List<ServerObject> writtenObjects)
-        {
-            Console.WriteLine("Predecessor Worker: " + worker_url + " called update");
-            Replica.update(writtenObjects);
-        }*/
 
         // Receive update from unknown server and update the replica list with the new values
         public void update(List<ServerObject> writtenObjects)

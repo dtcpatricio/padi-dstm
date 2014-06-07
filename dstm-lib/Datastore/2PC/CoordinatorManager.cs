@@ -173,7 +173,6 @@ namespace Datastore
             // If all participants responded 'yes'
             foreach (String url in _participantURLs.Keys)
             {
-                // TODO: A thread per participant
                 IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
                 //participant.doCommit(TX.TXID, MY_URL);
                 RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(participant.doCommit);
@@ -187,7 +186,6 @@ namespace Datastore
             // If at least one participant responded 'no'
             foreach (String url in _participantURLs.Keys)
             {
-                // TODO: A thread per participant
                 IParticipant participant = (IParticipant)Activator.GetObject(typeof(IParticipant), url);
                 //participant.doCommit(TX.TXID, MY_URL);
                 RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(participant.doAbort);
@@ -206,12 +204,10 @@ namespace Datastore
         {
             _participantURLs[url] = ParticipantResponse.NO;
             receivedAllResponses();
-            // TODO: send abort to all participants, and abort transaction
         }
 
         internal bool haveCommitted(String url)
         {
-            // TODO: confirm if transaction has committed or not
             return true;
         }
     }

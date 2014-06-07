@@ -27,7 +27,6 @@ namespace Datastore
         }
 
         // WARNING: This function is obsolete
-
         // The worker has a new predecessor (receives updates from a new one)
         public void setPredecessor(string predecessorURL)
         {
@@ -38,7 +37,7 @@ namespace Datastore
             Replica.PREDECESSOR = predecessorURL;
         }
 
-        //TODO: Start receiving requests from the failed server
+        //start receiving requests from the failed server
         public void substituteFailedServer()
         {
             lock (Datastore.SERVEROBJECTS)
@@ -70,7 +69,6 @@ namespace Datastore
         }
 
         // This server will fetch all primary data of sucessor and add it in his list of updates
-        // WARNING: Verificar o caso que o sucessor é ele próprio
         public void fetch_data(string predecessor_url)
         {
             IWorkerReplica predecessor = (IWorkerReplica)Activator.GetObject(
@@ -78,8 +76,6 @@ namespace Datastore
 
             List<ServerObject> fetched_data = predecessor.fetchData();
 
-            // WARNING: Será que existe algum caso em que adiciona dados repetidos?
-            // Como os dados existem sempre em 2 sitios deve estar correcto
             Replica.WORKERSERVEROBJECTS = fetched_data;
         }
 

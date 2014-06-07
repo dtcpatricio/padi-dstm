@@ -117,13 +117,10 @@ namespace MasterServer
         }
 
         // Master tells the worker to fail itself and stabilizes the system
-        // TODO: Stabilize the system
         internal static bool fail(string url)
         {
             if (isFailedServer(url)) { return false; }
-
             int id = getAvailableID(url);
-
             if (isFreezedServer(url)) { freezedServers.Remove(id); }
             failedServers.Add(id, url);
 
@@ -147,17 +144,10 @@ namespace MasterServer
             //Tell the sucessor to fetch the original data from the failed_predecessor and put it in his the list of updates
             failed_sucessor.fetch_data(failed_predecessorURL);
 
-            //Tell the failed_predecessor to fetch the data of failed_sucessor
-            // WARNING: Verificar o caso me que o sucessor é ele próprio, será que consegue enviar a msg?
-            //            failed_predecessor.fetch_data(failed_sucessorURL);
-
-            // Last thing to do is change the state, so that the library can continue working 
-
             IMasterWorker datastore = (IMasterWorker)Activator.GetObject(
                 typeof(IMasterWorker), url + "MasterWorker");
-
+            // Last thing to do is change the state, so that the library can continue working 
             datastore.fail();
-
             return true;
         }
 
@@ -189,7 +179,6 @@ namespace MasterServer
                 // Fetch recover data to recovered server to fetch the primary data of his sucessor
                 //  also sets his sucessor
                 datastore.fetch_recover_data(failed_sucessorURL);
-
                 return true;
             }
             if (isFreezedServer(url))
@@ -240,6 +229,7 @@ namespace MasterServer
             remote.setReplica(sucessor, predecessor);
         }
 
+        // Status operation
         internal static void status()
         {
             foreach (String server_url in availableServers.Values)

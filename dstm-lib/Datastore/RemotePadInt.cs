@@ -21,11 +21,8 @@ namespace Datastore
             }
 
             if (Datastore.STATE.Equals(State.FAILED)) {
-
-                //throw new TxException("Failed Server", this);
                 return Int32.MinValue;
             }
-
 
             int val = Datastore.regTentativeRead(uid, txID, clientURL);
             return val;
@@ -39,7 +36,6 @@ namespace Datastore
 
             if (!success)
             {
-                // TODO: Put breakpoint inspect modified list
                 Console.WriteLine("ABORTED TRANSACTION=" + txID);
                 IEndTransaction client = (IEndTransaction)Activator.GetObject(
                     typeof(IEndTransaction), clientURL + "EndTransaction");

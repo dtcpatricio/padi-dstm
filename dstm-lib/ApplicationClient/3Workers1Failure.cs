@@ -1,16 +1,17 @@
 ﻿using System;
+using System.Diagnostics;
 using PADI_DSTM;
 
 class _3Workers1Failure
 {
-    
+    /*
     static void Main(string[] args)
     {
-        
+                
         PadiDstm.Init();
         bool res;
         String recover = Console.ReadLine();
-
+        Stopwatch sw = Stopwatch.StartNew();
         if (recover.Equals("R"))
         {
             res = PadiDstm.Recover("tcp://localhost:8088/");
@@ -25,7 +26,7 @@ class _3Workers1Failure
         PadInt pi_c = PadiDstm.CreatePadInt(43);
 
         Console.WriteLine("Press <Enter> and kill server with UID = 20");
-        Console.ReadLine();
+        //Console.ReadLine();
 
         res = PadiDstm.TxCommit();
 
@@ -56,7 +57,7 @@ class _3Workers1Failure
        
         Console.WriteLine("Transaction = " + res);
         Console.WriteLine("Press <Enter> to start new transaction");
-        Console.ReadLine();
+        //Console.ReadLine();
        
         res = PadiDstm.TxBegin();
         pi_a = PadiDstm.AccessPadInt(12);
@@ -73,8 +74,8 @@ class _3Workers1Failure
 
 
         Console.WriteLine("Transaction committed = " + res);
-        Console.ReadLine();
+        sw.Stop();
+        Console.WriteLine("{Total time (ms) : " + (long) sw.ElapsedMilliseconds);
+        Console.ReadLine();*/
     }
 
-        
-}

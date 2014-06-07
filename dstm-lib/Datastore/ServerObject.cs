@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Datastore
 {
     [Serializable]
-    //WARNING: Changed the accessiblity of ServerObject to public because of fetch data
+
     public class ServerObject
     {
         private int _uid;
@@ -16,7 +16,6 @@ namespace Datastore
         private int _readTS;
         private int _writeTS;
 
-        // not sure if can be removed later on
         private int _committedVersion;
 
         internal int UID { get { return _uid; } }

@@ -69,7 +69,7 @@ namespace PADI_DSTM
             State = TransactionState.ACTIVE;
         }
 
-        // TODO: Detect failure if worker fails to reply
+        // Detect failure if worker fails to reply
         internal void timerAlive(string server_url)
         {
             // Create a timer with a TIMETOFAILURE interval.
@@ -84,7 +84,7 @@ namespace PADI_DSTM
         }
 
 
-        // Tell Master to kill it 
+        // Tell Master to kill the server
         internal void onTimeFail(object source, ElapsedEventArgs e, string server_url)
         {
             Console.WriteLine("Server " + server_url + " Died!");
@@ -96,13 +96,9 @@ namespace PADI_DSTM
 
             failed_lock = true;
 
-            // master.setFailedServer(server_url);
             master.fail(server_url);
-
             State = TransactionState.ABORTED;
 
-            //Update to the new list of servers
-            // WARNING: It seems now it is not necessary
             PadiDstm.Servers.updateCache();
             failed_lock = false;
         }
@@ -128,13 +124,8 @@ namespace PADI_DSTM
                 //In case the server never responds -> force kill 
                 if (value == Int32.MinValue)
                 {
-
-                    // TODO: Kill the server
                     State = TransactionState.ABORTED;
 
-                    /*padInt.URL = PadiDstm.Servers.AvailableServers[PadiDstm.computeDatastore(padInt.UID)];
-                    int value2 = reRead(padInt);
-                    AddValue((int)padInt.UID, value2);*/
                     failed_lock = false;
                     freeze_lock[(int)padInt.UID] = true;
 
@@ -156,27 +147,6 @@ namespace PADI_DSTM
         }
 
 
-        /*
-        internal int reRead(PadInt padInt)
-        {
-            lock (this)
-            {
-                string remotePadIntURL = padInt.URL + "RemotePadInt";
-                int uid = padInt.UID;
-
-
-                IRemotePadInt remote = (IRemotePadInt)Activator.GetObject(
-                    typeof(IRemotePadInt), remotePadIntURL);
-
-                // call the RemotePadInt to get the value
-                int val = remote.Read(uid, TXID, PadiDstm.Client_Url);
-                AddValue(uid, val);
-
-                addAccessedServer(padInt.URL);
-                return val;
-            }
-        }
-        */
 
         internal int Read(PadInt padInt)
         {

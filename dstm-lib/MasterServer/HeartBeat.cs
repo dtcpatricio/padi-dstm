@@ -21,7 +21,7 @@ namespace MasterServer
             get { return _timerServers; }
         }
 
-        // TODO: Detect failure if worker fails to reply
+        // Detect failure if worker fails to reply
         internal static Timer timerAlive(string server_url)
         {
             // Create a timer with a ten second interval.
@@ -50,14 +50,13 @@ namespace MasterServer
         internal static void resetTimer(Timer timer)
         {
             timer.Enabled = false;
-            //timer.Interval = TIMETOFAILURE;
-            timer.Interval = 15000;
+            timer.Interval = TIMETOFAILURE;
             timer.AutoReset = true;
             timer.Enabled = true;
         }
 
 
-        // Is there a need of lock?
+        // If received, resets the timer for the worker
         internal static void IAmAlive(String worker_url)
         {
             if (!WorkerManager.isFailedServer(worker_url))
@@ -70,7 +69,7 @@ namespace MasterServer
             {
                 // If the worker_url is not in the heartbeat servers it means
                 // that it came back from failure
-                Console.WriteLine("CAME BACK FROM THE DEAD, BRAINS..." + worker_url + "!!!");
+                Console.WriteLine("CAME BACK FROM FAILURE " + worker_url + "!");
             }
         }
     }

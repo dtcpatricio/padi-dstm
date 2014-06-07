@@ -3,21 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using PADI_DSTM;
 
 class Cicle
 {
-   /*
+   
     static void Main(string[] args)
     {
         bool res = false; int aborted = 0, committed = 0;
 
         PadiDstm.Init();
         String key = Console.ReadLine();
+        
         if (key.Equals("C"))
         {
             args = new String[] { "C" };
         }
+        Stopwatch sw = Stopwatch.StartNew();
         try
         {
             if ((args.Length > 0) && (args[0].Equals("C")))
@@ -117,6 +120,9 @@ class Cicle
             Console.ReadLine();
             PadiDstm.TxAbort();
         }
+        sw.Stop();
+        Console.WriteLine("{Total time (ms) : " + (long)sw.ElapsedMilliseconds);
+        Console.ReadLine();
     }
-     */
+   
 }

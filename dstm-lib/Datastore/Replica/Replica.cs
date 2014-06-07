@@ -122,16 +122,10 @@ namespace Datastore
                     }
                     j = 0;
                 }
-                //Replica.WORKERSERVEROBJECTS.AddRange(updatedList);
             }
-            /*
-            foreach (ServerObject so in worker_serverObjects[predecessor])
-            {
-                Console.WriteLine("\t" + "UPDATING UID=" + so.UID + " VALUE=" + so.VALUE);
-            }*/
         }
 
-        //TODO: Set sucessor
+        //Notify predecessor and sucessor 
         internal static void setReplica(string sucessor, string predecessor)
         {
             SUCESSOR = sucessor;

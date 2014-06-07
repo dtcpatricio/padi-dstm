@@ -35,7 +35,6 @@ namespace PADI_DSTM
         {
             System.Console.Write("Type in a port to use for EndTransaction object: ");
             _port = System.Console.ReadLine();
-            // _port = "8090";
             _master_url = "tcp://localhost:8086/";
             _client_url = "tcp://localhost:" + _port + "/";
 
@@ -61,11 +60,10 @@ namespace PADI_DSTM
             // update the cache of data servers
             Servers.updateCache();
 
-            return true; // placeholder
+            return true; 
         }
 
-        // Move Transaction.closeChannel to inside if (crossedLocks) 
-        // Only if the transaction is committed we close the channel
+
         public static bool TxCommit()
         {
             if (_transaction.State.Equals(TransactionState.ABORTED))
@@ -76,8 +74,6 @@ namespace PADI_DSTM
 
             if (Transaction.ACCESSEDSERVERS.Count > 0)
             {
-                //TODO: Check if any of the padints is NULL
-                // if so the transaction must abort because some server failed
                 bool success = false;
 
                 List<string> participants = Transaction.ACCESSEDSERVERS;
@@ -91,20 +87,18 @@ namespace PADI_DSTM
                 Console.WriteLine("PadiDstm.TxCommit: Before commit in Datastore");
                 success = datastore.commit(Transaction.TXID, participants);
                 Console.WriteLine("PadiDstm.TxCommit: After commit in Datastore");
-                // TODO: there may be something missing still here
 
                 _transaction = null;
                 return success;
             }
 
             _transaction = null;
-            //return false;
             return true;
         }
 
         public static bool TxAbort()
         {
-            return true; // placeholder
+            return true; 
         }
 
 
@@ -167,7 +161,8 @@ namespace PADI_DSTM
             }
         }
 
-        // returning -1 when 2 datastores are alive
+        
+        // Computes the datastore that stores the object given an uid
         internal static int computeDatastore(int uid)
         {
             // compute the digest of the uid
@@ -175,7 +170,7 @@ namespace PADI_DSTM
             MD5 md5 = new MD5CryptoServiceProvider();
 
             byte[] digest = md5.ComputeHash(uidBytes);
-            //string hash = getMd5Hash(digest);
+ 
             // get the first 4 bytes of the full 16 bytes of the hash
             // and have it moduled with the number of servers
             int test = BitConverter.ToInt32(digest, 0);
@@ -220,7 +215,7 @@ namespace PADI_DSTM
                 }
                 else
                 {
-                    // Enunciado: Returns null if the object does not exist already.
+                    //Returns null if the object does not exist already.
                     return null;
                 }
             }
@@ -245,7 +240,6 @@ namespace PADI_DSTM
         // Returns the server url that has the requested UID objects (Sucessor)
         public static string manageFailedServer(string failed_url, int serverNumber)
         {
-            Console.WriteLine("INSIDE Manage Failed Server CATCH!!!");
             string sucessor_url;
 
             ILibraryComm master = (ILibraryComm)Activator.GetObject(
@@ -258,10 +252,7 @@ namespace PADI_DSTM
                 Console.WriteLine("ERROR: THERE ARE NO SERVERS THAT HAVE THE REQUESTED PADINT");
                 _transaction.State = TransactionState.ABORTED;
             }
-
-
             Servers.AvailableServers[serverNumber] = sucessor_url;
-
             return sucessor_url;
         }
 
@@ -273,21 +264,16 @@ namespace PADI_DSTM
             return true;
         }
 
+        // Tell master the server failed
         public static bool Fail(string url)
         {
             ILibraryComm master = (ILibraryComm)Activator.GetObject( typeof(ILibraryComm), _master_url + "LibraryComm");
 
             master.fail(url);
-
-            // Force abort transaction, isn't correct for all cases
-            /*if (Transaction.ACCESSEDSERVERS.Contains(url))
-            {
-                Transaction.State = TransactionState.ABORTED;
-            }*/
-
             return true;
         }
 
+        // Tell master the server freezed
         public static bool Freeze(string url)
         {
             ILibraryComm master = (ILibraryComm)Activator.GetObject(
@@ -296,6 +282,7 @@ namespace PADI_DSTM
             return master.freeze(url);
         }
 
+        // Tell master the master to recover the server
         public static bool Recover(string url)
         {
             ILibraryComm master = (ILibraryComm)Activator.GetObject(

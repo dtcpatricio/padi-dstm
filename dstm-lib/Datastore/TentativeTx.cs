@@ -11,9 +11,6 @@ namespace Datastore
         private int _txID;
         private string _clientURL;
 
-        // TODO: after commiting or aborting set _txDecision
-        // PROBLEM: transaction is cached for a little to let participants
-        // make getDecision call to know that tx aborted or committed?
         private TransactionDecision _txDecision;
         
         private List<ServerObject> writtenObjects;

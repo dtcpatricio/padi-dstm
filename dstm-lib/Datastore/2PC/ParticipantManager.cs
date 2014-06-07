@@ -37,7 +37,7 @@ namespace Datastore
             //createLogDirectory();
         }
 
-        // TODO: Necessary because a server can be a coordinator as well as a participant
+
         ~ParticipantManager()
         {
         }
@@ -60,7 +60,6 @@ namespace Datastore
             Console.WriteLine("I'm the participant: " + MY_URL);
             Console.WriteLine("Coordinator URL: " + _coordinatorURL);
             ICoordinator coord = (ICoordinator)Activator.GetObject(typeof(ICoordinator), _coordinatorURL);
-            // TODO: test if transaction can commit
             
             MY_DECISION = TransactionDecision.COMMIT;
 
